@@ -13,10 +13,14 @@ public class HeadBob : MonoBehaviour
     public float groundLandingVerticalOffsetDistance = 0.05f;
     public float groundLandingOffsetRecoverySpeed = 5f;
     public GameObject cameraArm;
+    public Transform weaponHolder;
+    public float weaponHolderBobDampen = 0.5f;
+    public float weaponHolderSwayDampen = 0.5f;
 
-    private float timer = Mathf.PI / 2;
+    private float timer = Mathf.PI;
     private float verticalOffsetAnimTimer = 0;
     private SmoothMovement smoothMovement;
+
 
     private void Awake() {
         smoothMovement = GetComponent<SmoothMovement>();
@@ -26,38 +30,33 @@ public class HeadBob : MonoBehaviour
     void Update()
     {
         Vector3 verticalOffset = CalculateVerticalOffset();
-        Debug.Log(verticalOffset);
-
         if ((Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0) && smoothMovement.isGrounded) //moving
         {
             timer += bobSpeed * Time.deltaTime;
-
-            //use the timer value to set the position
-            Vector3 newPosition = new Vector3(Mathf.Cos(timer) * swayAmount, restPosition.y + Mathf.Abs((Mathf.Sin(timer) * bobAmount)), restPosition.z); //abs val of y for a parabolic path
-            cameraArm.transform.localPosition = newPosition + verticalOffset;
         }
         else
         {
-            float angleA = Mathf.PI / 2;
-            float angleB = (3 * Mathf.PI) / 2;
+            float angleA = Mathf.PI * 1.5f;
+            float angleB = Mathf.PI / 2;
+            float targetAngle;
+            if (Mathf.Abs(angleA - timer) < Mathf.Abs(angleB - timer)) {
+                targetAngle = angleA;
+            } else {
+                targetAngle = angleB;
+            }
 
-            // Calculate the absolute difference between the angles
-            float diffA = Mathf.Abs(Mathf.DeltaAngle(timer, angleA));
-            float diffB = Mathf.Abs(Mathf.DeltaAngle(timer, angleB));
-
-            // Interpolate towards the nearest angle
-            float targetAngle = (diffA < diffB) ? angleA : angleB;
-            timer = Mathf.MoveTowardsAngle(timer, targetAngle, idleReturnSpeed * Time.deltaTime);
-
-            //use the timer value to set the position
-            Vector3 newPosition = new Vector3(Mathf.Cos(timer) * swayAmount, restPosition.y + Mathf.Abs((Mathf.Sin(timer) * bobAmount)), restPosition.z); //abs val of y for a parabolic path
-            cameraArm.transform.localPosition = newPosition + verticalOffset;
+            timer = Mathf.Lerp(timer, targetAngle, idleReturnSpeed * Time.deltaTime);
         }
 
+        Vector3 newPosition = new Vector3(restPosition.x + Mathf.Cos(timer) * swayAmount, restPosition.y + (Mathf.Sin(timer * 2) * bobAmount), restPosition.z); //abs val of y for a parabolic path
+        cameraArm.transform.localPosition = newPosition + verticalOffset;
+
+        Vector3 camArmDifference = cameraArm.transform.localPosition - restPosition;
+
+        weaponHolder.localPosition = new Vector3((restPosition.x + camArmDifference.x * weaponHolderSwayDampen), (restPosition.y + camArmDifference.y * weaponHolderBobDampen), restPosition.z);
         
         if (timer > Mathf.PI * 2)
-            timer = 0;
-
+            timer -= Mathf.PI * 2;
     }
 
     private Vector3 CalculateVerticalOffset() {
