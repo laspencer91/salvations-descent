@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f736da118cbc44d8bcdf1c87795dd41f, type: 3}
+  m_Name: FootstepGrassAudioEvent
+  m_EditorClassIdentifier: 
+  audioClips:
+  - {fileID: 8300000, guid: 4cc281fc9c049f9429a7eb91902b571b, type: 3}
+  - {fileID: 8300000, guid: f53684bf149b4204190fa9fec6526f34, type: 3}
+  - {fileID: 8300000, guid: 5c21e8b442931074aa8be4fbc2cb1c6d, type: 3}
+  - {fileID: 8300000, guid: 4069f5343ef2b5948aa22b800944e25f, type: 3}
+  volume: 0.1
+  pitchVariation: {x: 1, y: 1.1}

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f736da118cbc44d8bcdf1c87795dd41f, type: 3}
+  m_Name: FootstepConcreteAudioEvent
+  m_EditorClassIdentifier: 
+  audioClips:
+  - {fileID: 8300000, guid: 37288ceac650576458f813c36b5c6d11, type: 3}
+  - {fileID: 8300000, guid: cf70b727e50520243b2a24904510138c, type: 3}
+  - {fileID: 8300000, guid: 6336dbf6b5f2d3d43b72ffaf94d14d17, type: 3}
+  - {fileID: 8300000, guid: 1a9506dccf1e57f41ada3618b81b9f13, type: 3}
+  - {fileID: 8300000, guid: ee554f724ad784645b27ddd0f1567cac, type: 3}
+  volume: 0.1
+  pitchVariation: {x: 1, y: 1.1}

@@ -1,0 +1,113 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb200760eb044c3c9e11978fcf1c3678, type: 3}
+  m_Name: Surface Sound Definition
+  m_EditorClassIdentifier: 
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects:
+    - {fileID: 2800000, guid: a2e08fc6ee6cd414fa2dfd66ba3b9c6c, type: 3}
+    - {fileID: 11400000, guid: b9aa6ccdea9fe4a44b624c5b3b9015c1, type: 2}
+    - {fileID: 2800000, guid: 60b7fd0b5e75e364d856686e4b89cf36, type: 3}
+    - {fileID: 11400000, guid: dc0e3d0b9dfb153448660f8e14630764, type: 2}
+    - {fileID: 2800000, guid: fd1a5df0a69f74bae8bdecb46c6e2fd5, type: 3}
+    - {fileID: 11400000, guid: 6712cf6e4a714be4d9c201aedc3cee82, type: 2}
+    - {fileID: 2800000, guid: a024e2fb4440a4046b8a76bfb7931257, type: 3}
+    - {fileID: 11400000, guid: 17298d84c7b85a741a45814fbba676b8, type: 2}
+    - {fileID: 2800000, guid: 9875bf7345d4ac04ab35f3b9ed63a954, type: 3}
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: MatTypeToAudioEventDictionary
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[UnityEngine.Texture, UnityEngine.CoreModule],[_Systems.Audio.AudioEvent,
+        Assembly-CSharp]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.ObjectEqualityComparer`1[[UnityEngine.Texture,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 5
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 10
+      Data: 0
+    - Name: $v
+      Entry: 10
+      Data: 1
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 10
+      Data: 2
+    - Name: $v
+      Entry: 10
+      Data: 3
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 10
+      Data: 4
+    - Name: $v
+      Entry: 10
+      Data: 5
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 10
+      Data: 6
+    - Name: $v
+      Entry: 10
+      Data: 7
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 7
+      Data: 
+    - Name: $k
+      Entry: 10
+      Data: 8
+    - Name: $v
+      Entry: 10
+      Data: 5
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  fallbackFootstepAudioEvent: {fileID: 11400000, guid: dc0e3d0b9dfb153448660f8e14630764, type: 2}

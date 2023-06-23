@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f736da118cbc44d8bcdf1c87795dd41f, type: 3}
+  m_Name: FootstepDirtAudioEvent
+  m_EditorClassIdentifier: 
+  audioClips:
+  - {fileID: 8300000, guid: 095dfbfca2e1a234c827fc6eb75ef1c4, type: 3}
+  - {fileID: 8300000, guid: b13dc41c8a4947e418430fc571cbede2, type: 3}
+  - {fileID: 8300000, guid: 35ee9eabf12b82f49a342ef4dbb70892, type: 3}
+  - {fileID: 8300000, guid: 24ee34e0c366b724db7709ab8500b358, type: 3}
+  volume: 0.1
+  pitchVariation: {x: 1, y: 1.1}

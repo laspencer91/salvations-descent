@@ -10,13 +10,14 @@ public class SmoothMovement : MonoBehaviour
     public float changeOfDirectionModifier = 0.5f;  // New variable for change of direction modifier
     public float mouseSensitivity = 2f;
     public float jumpForce = 5f;
+    public float slopeThreshold = 45f;
+    public float slopeSpeed = 0.8f;
 
     public Vector3 gravity = new Vector3(0f, -9.81f, 0f);
 
     [HideInInspector] public Camera playerCamera;
     [HideInInspector] public bool isGrounded;
     [HideInInspector] public Vector3 velocity;
-
 
     private CharacterController controller;
     private float verticalVelocity = 0f;
@@ -96,7 +97,7 @@ public class SmoothMovement : MonoBehaviour
         isGrounded = controller.isGrounded;
 
         // Move the character and detect collisions
-        CollisionFlags collisionFlags = controller.Move(velocity * Time.deltaTime);
+        CollisionFlags collisionFlags = controller.Move((velocity) * Time.deltaTime);
         
         // Slide against walls
         if ((collisionFlags & CollisionFlags.CollidedSides) != 0)
@@ -125,5 +126,36 @@ public class SmoothMovement : MonoBehaviour
         }
 
         return wallNormal;
+    }
+
+    private Vector3 hitNormal;
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (!isGrounded && velocity.y > 0f ) {
+            if (Vector3.Dot(hit.normal, Vector3.down) > 0.8f)
+            {
+                verticalVelocity = 0f;
+            }
+        }
+
+        // Check if we are sliding.
+         var hitNormal = hit.normal;
+         var angle = Vector3.Angle(Vector3.up, hitNormal);
+         var isSliding = (angle > hit.controller.slopeLimit && angle <= 90f);
+         if (isSliding)
+         {
+             // Slide along the slopes surface. This ensures the character stays grounded.
+             var slopeRotation = Quaternion.FromToRotation(Vector3.up, hitNormal);
+             var slopeVelocity = slopeRotation * new Vector3(hitNormal.x, 0f, hitNormal.z) * slopeSpeed;
+             Vector3 slideDirection = Vector3.ProjectOnPlane(velocity, hitNormal).normalized;
+             velocity = slideDirection * -gravity.y;
+
+             // Prevent jumping if we are sliding, but not if we are walking against a slide.
+             var collisionFlags = hit.controller.collisionFlags;
+             if (!(collisionFlags.HasFlag(CollisionFlags.Below) && collisionFlags.HasFlag(CollisionFlags.Sides)))
+             {
+                 //yourScript.PreventJump();
+             }
+         }
     }
 }
