@@ -12,13 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c85bb0dc88823d47b75f15f0cea4f16, type: 3}
   m_Name: Quake Style Movement
   m_EditorClassIdentifier: 
-  _acceleration: 70.4
-  _airAcceleration: 6
-  _friction: 10
-  _airFriction: 0.05
-  _baseMaxSpeed: 164.38
-  _sprintSpeedMultiplier: 2
-  _gravity: 20
-  _maxFallSpeed: 11
-  _jumpPower: 8
-  _jumpCooldown: 0.1
+  Acceleration: 11
+  Friction: 7
+  AirFriction: 4
+  BaseMaxSpeed: 15
+  SprintSpeedMultiplier: 2
+  Gravity: 15
+  MaxFallSpeed: 15
+  JumpPower: 5.5
+  JumpCooldown: 0.1

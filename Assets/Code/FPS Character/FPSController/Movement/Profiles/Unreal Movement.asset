@@ -12,13 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c85bb0dc88823d47b75f15f0cea4f16, type: 3}
   m_Name: Unreal Movement
   m_EditorClassIdentifier: 
-  _acceleration: 9
-  _airAcceleration: 6
-  _friction: 10
-  _airFriction: 0.05
-  _baseMaxSpeed: 11
-  _sprintSpeedMultiplier: 2
-  _gravity: 20
-  _maxFallSpeed: 11
-  _jumpPower: 6
-  _jumpCooldown: 0.1
+  Acceleration: 7
+  Friction: 7
+  AirFriction: 0.25
+  BaseMaxSpeed: 13
+  SprintSpeedMultiplier: 2
+  Gravity: 25
+  MaxFallSpeed: 14
+  JumpPower: 10
+  JumpCooldown: 0.1

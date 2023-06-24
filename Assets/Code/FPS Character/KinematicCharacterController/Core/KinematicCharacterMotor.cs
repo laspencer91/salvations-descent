@@ -120,7 +120,9 @@ namespace KinematicCharacterController
     {
         public bool IsStable;
 
+        public bool FoundInnerNormal;
         public Vector3 InnerNormal;
+        public bool FoundOuterNormal;
         public Vector3 OuterNormal;
 
         public bool ValidStepDetected;
@@ -853,7 +855,6 @@ namespace KinematicCharacterController
                                         out resolutionDistance))
                                 {
                                     // Resolve along obstruction direction
-                                    Vector3 originalResolutionDirection = resolutionDirection;
                                     HitStabilityReport mockReport = new HitStabilityReport();
                                     mockReport.IsStable = IsStableOnNormal(resolutionDirection);
                                     resolutionDirection = GetObstructionNormal(resolutionDirection, mockReport.IsStable);
@@ -961,9 +962,10 @@ namespace KinematicCharacterController
                 }
 
                 Vector3 tmpVelocityFromCurrentAttachedRigidbody = Vector3.zero;
+                Vector3 tmpAngularVelocityFromCurrentAttachedRigidbody = Vector3.zero;
                 if (_attachedRigidbody)
                 {
-                    tmpVelocityFromCurrentAttachedRigidbody = GetVelocityFromRigidbodyMovement(_attachedRigidbody, _transientPosition, deltaTime);
+                    GetVelocityFromRigidbodyMovement(_attachedRigidbody, _transientPosition, deltaTime, out tmpVelocityFromCurrentAttachedRigidbody, out tmpAngularVelocityFromCurrentAttachedRigidbody);
                 }
 
                 // Conserve momentum when de-stabilized from an attached rigidbody
@@ -980,7 +982,7 @@ namespace KinematicCharacterController
                     _attachedRigidbodyVelocity = tmpVelocityFromCurrentAttachedRigidbody;
 
                     // Rotation from attached rigidbody
-                    Vector3 newForward = Vector3.ProjectOnPlane(Quaternion.Euler(Mathf.Rad2Deg * _attachedRigidbody.angularVelocity * deltaTime) * _characterForward, _characterUp).normalized;
+                    Vector3 newForward = Vector3.ProjectOnPlane(Quaternion.Euler(Mathf.Rad2Deg * tmpAngularVelocityFromCurrentAttachedRigidbody * deltaTime) * _characterForward, _characterUp).normalized;
                     TransientRotation = Quaternion.LookRotation(newForward, _characterUp);
                 }
 
@@ -1092,7 +1094,6 @@ namespace KinematicCharacterController
                                         out resolutionDistance))
                                 {
                                     // Resolve along obstruction direction
-                                    Vector3 originalResolutionDirection = resolutionDirection;
                                     HitStabilityReport mockReport = new HitStabilityReport();
                                     mockReport.IsStable = IsStableOnNormal(resolutionDirection);
                                     resolutionDirection = GetObstructionNormal(resolutionDirection, mockReport.IsStable);
@@ -1220,16 +1221,17 @@ namespace KinematicCharacterController
                     if (stabilityReport.IsMovingTowardsEmptySideOfLedge)
                     {
                         // Max snap vel
-                        if (velocity.magnitude >= MaxVelocityForLedgeSnap)
+                        Vector3 velocityOnLedgeNormal = Vector3.Project(velocity, stabilityReport.LedgeFacingDirection);
+                        if (velocityOnLedgeNormal.magnitude >= MaxVelocityForLedgeSnap)
                         {
                             return false;
                         }
+                    }
 
-                        // Distance from ledge
-                        if (stabilityReport.IsOnEmptySideOfLedge && stabilityReport.DistanceFromLedge > MaxStableDistanceFromLedge)
-                        {
-                            return false;
-                        }
+                    // Distance from ledge
+                    if (stabilityReport.IsOnEmptySideOfLedge && stabilityReport.DistanceFromLedge > MaxStableDistanceFromLedge)
+                    {
+                        return false;
                     }
                 }
 
@@ -1365,6 +1367,12 @@ namespace KinematicCharacterController
         {
             if (deltaTime <= 0f)
                 return false;
+
+            // Planar constraint
+            if (HasPlanarConstraint)
+            {
+                transientVelocity = Vector3.ProjectOnPlane(transientVelocity, PlanarConstraintAxis.normalized);
+            }
 
             bool wasCompleted = true;
             Vector3 remainingMovementDirection = transientVelocity.normalized;
@@ -1718,6 +1726,11 @@ namespace KinematicCharacterController
                 }
             }
 
+            if (HasPlanarConstraint)
+            {
+                transientVelocity = Vector3.ProjectOnPlane(transientVelocity, PlanarConstraintAxis.normalized);
+            }
+
             float newVelocityFactor = transientVelocity.magnitude / velocityBeforeProjection.magnitude;
             remainingMovementMagnitude *= newVelocityFactor;
             remainingMovementDirection = transientVelocity.normalized;
@@ -1849,6 +1862,14 @@ namespace KinematicCharacterController
                             hitBodyMass = hitCharacterMotor.SimulatedCharacterMass;
                             hitBodyMassAtPoint = hitCharacterMotor.SimulatedCharacterMass; // todo
                             hitBodyVelocity = hitCharacterMotor.BaseVelocity;
+                        }
+                        else if (!hitBodyIsDynamic)
+                        {
+                            PhysicsMover physicsMover = bodyHit.Rigidbody.GetComponent<PhysicsMover>();
+                            if(physicsMover)
+                            {
+                                hitBodyVelocity = physicsMover.Velocity;
+                            }
                         }
 
                         // Calculate the ratio of the total mass that the character mass represents
@@ -2009,6 +2030,9 @@ namespace KinematicCharacterController
             Vector3 innerHitDirection = Vector3.ProjectOnPlane(hitNormal, atCharacterUp).normalized;
 
             stabilityReport.IsStable = this.IsStableOnNormal(hitNormal);
+
+            stabilityReport.FoundInnerNormal = false;
+            stabilityReport.FoundOuterNormal = false;
             stabilityReport.InnerNormal = hitNormal;
             stabilityReport.OuterNormal = hitNormal;
 
@@ -2033,6 +2057,7 @@ namespace KinematicCharacterController
                 {
                     Vector3 innerLedgeNormal = innerLedgeHit.normal;
                     stabilityReport.InnerNormal = innerLedgeNormal;
+                    stabilityReport.FoundInnerNormal = true;
                     isStableLedgeInner = IsStableOnNormal(innerLedgeNormal);
                 }
 
@@ -2045,6 +2070,7 @@ namespace KinematicCharacterController
                 {
                     Vector3 outerLedgeNormal = outerLedgeHit.normal;
                     stabilityReport.OuterNormal = outerLedgeNormal;
+                    stabilityReport.FoundOuterNormal = true;
                     isStableLedgeOuter = IsStableOnNormal(outerLedgeNormal);
                 }
 
@@ -2053,10 +2079,10 @@ namespace KinematicCharacterController
                 {
                     stabilityReport.IsOnEmptySideOfLedge = isStableLedgeOuter && !isStableLedgeInner;
                     stabilityReport.LedgeGroundNormal = isStableLedgeOuter ? stabilityReport.OuterNormal : stabilityReport.InnerNormal;
-                    stabilityReport.LedgeRightDirection = Vector3.Cross(hitNormal, stabilityReport.OuterNormal).normalized;
-                    stabilityReport.LedgeFacingDirection = Vector3.Cross(stabilityReport.LedgeGroundNormal, stabilityReport.LedgeRightDirection).normalized;
+                    stabilityReport.LedgeRightDirection = Vector3.Cross(hitNormal, stabilityReport.LedgeGroundNormal).normalized;
+                    stabilityReport.LedgeFacingDirection = Vector3.ProjectOnPlane(Vector3.Cross(stabilityReport.LedgeGroundNormal, stabilityReport.LedgeRightDirection), CharacterUp).normalized;
                     stabilityReport.DistanceFromLedge = Vector3.ProjectOnPlane((hitPoint - (atCharacterPosition + (atCharacterRotation * _characterTransformToCapsuleBottom))), atCharacterUp).magnitude;
-                    stabilityReport.IsMovingTowardsEmptySideOfLedge = Vector3.Dot(withCharacterVelocity, Vector3.ProjectOnPlane(stabilityReport.LedgeFacingDirection, CharacterUp)) > 0f;
+                    stabilityReport.IsMovingTowardsEmptySideOfLedge = Vector3.Dot(withCharacterVelocity.normalized, stabilityReport.LedgeFacingDirection) > 0f;
                 }
 
                 if (stabilityReport.IsStable)
@@ -2160,9 +2186,6 @@ namespace KinematicCharacterController
                     }
                 }
 
-                Vector3 characterBottom = characterPosition + (characterRotation * _characterTransformToCapsuleBottom);
-                float sqrHitHeight = Vector3.Project(farthestHit.point - characterBottom, characterUp).sqrMagnitude;
-
                 Vector3 characterPositionAtHit = stepCheckStartPos + (-characterUp * (farthestHit.distance - CollisionOffset));
 
                 int atStepOverlaps = CharacterCollisionsOverlap(characterPositionAtHit, characterRotation, _internalProbedColliders);
@@ -2262,26 +2285,37 @@ namespace KinematicCharacterController
         /// <summary>
         /// Get true linear velocity (taking into account rotational velocity) on a given point of a rigidbody
         /// </summary>
-        public Vector3 GetVelocityFromRigidbodyMovement(Rigidbody interactiveRigidbody, Vector3 atPoint, float deltaTime)
+        public void GetVelocityFromRigidbodyMovement(Rigidbody interactiveRigidbody, Vector3 atPoint, float deltaTime, out Vector3 linearVelocity, out Vector3 angularVelocity)
         {
             if (deltaTime > 0f)
             {
-                Vector3 effectiveMoverVelocity = interactiveRigidbody.velocity;
+                linearVelocity = interactiveRigidbody.velocity;
+                angularVelocity = interactiveRigidbody.angularVelocity;
+                if(interactiveRigidbody.isKinematic)
+                {
+                    PhysicsMover physicsMover = interactiveRigidbody.GetComponent<PhysicsMover>();
+                    if (physicsMover)
+                    {
+                        linearVelocity = physicsMover.Velocity;
+                        angularVelocity = physicsMover.AngularVelocity;
+                    }
+                }
 
-                if (interactiveRigidbody.angularVelocity != Vector3.zero)
+                if (angularVelocity != Vector3.zero)
                 {
                     Vector3 centerOfRotation = interactiveRigidbody.transform.TransformPoint(interactiveRigidbody.centerOfMass);
 
                     Vector3 centerOfRotationToPoint = atPoint - centerOfRotation;
-                    Quaternion rotationFromInteractiveRigidbody = Quaternion.Euler(Mathf.Rad2Deg * interactiveRigidbody.angularVelocity * deltaTime);
+                    Quaternion rotationFromInteractiveRigidbody = Quaternion.Euler(Mathf.Rad2Deg * angularVelocity * deltaTime);
                     Vector3 finalPointPosition = centerOfRotation + (rotationFromInteractiveRigidbody * centerOfRotationToPoint);
-                    effectiveMoverVelocity += (finalPointPosition - atPoint) / deltaTime;
+                    linearVelocity += (finalPointPosition - atPoint) / deltaTime;
                 }
-                return effectiveMoverVelocity;
             }
             else
             {
-                return Vector3.zero;
+                linearVelocity = default;
+                angularVelocity = default;
+                return;
             }
         }
 

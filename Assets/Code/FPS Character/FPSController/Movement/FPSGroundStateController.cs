@@ -67,7 +67,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		{
 			if (_footstepAudioPlaybackTimer > 0)
 			{
-				_footstepAudioPlaybackTimer -= Time.deltaTime * (Motor.Velocity.magnitude / MovementProfile._baseMaxSpeed);
+				_footstepAudioPlaybackTimer -= Time.deltaTime * (Motor.Velocity.magnitude / MovementProfile.BaseMaxSpeed);
 			}
 			else
 			{
@@ -84,27 +84,24 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 	public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
 	{
 		// Apply Speed Multipliers : Handle Sprinting Input
-		HandleSprintRequest();
+		// HandleSprintRequest();
 
 		// Handle Base Movement
 		if (Motor.GroundingStatus.IsStableOnGround)
 		{
 			PerformGroundedMovement(ref currentVelocity,  deltaTime);
+			ApplyFriction(ref currentVelocity, MovementProfile.Friction, deltaTime);
 		}
 		else
 		{
 			PerformUngroundedMovement(ref currentVelocity, deltaTime);
+			ApplyFriction(ref currentVelocity, MovementProfile.AirFriction, deltaTime);
 		}
 		
 		// Handle Jumping
-		if (_jumpRequested && !_isJumping && Motor.GroundingStatus.FoundAnyGround)
+		if (_jumpRequested && !_isJumping && Motor.GroundingStatus.IsStableOnGround)
 		{
 			PerformJump(ref currentVelocity);
-		}
-
-		if (currentVelocity.magnitude > MovementProfile._maxFallSpeed)
-		{
-			currentVelocity = currentVelocity.normalized * MovementProfile._maxFallSpeed;
 		}
 	}
 	
@@ -120,24 +117,45 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 	 * Movement to execute when player is grounded
 	 */
 	private void PerformGroundedMovement(ref Vector3 currentVelocity, float deltaTime)
-	{
-		Vector3 targetMovementVelocity;
-		
+	{		
 		// Reorient velocity on slope
 		currentVelocity = Motor.GetDirectionTangentToSurface(currentVelocity, Motor.GroundingStatus.GroundNormal) * currentVelocity.magnitude;
+	
+		Vector3 flatVelocity = new Vector3(currentVelocity.x, 0, currentVelocity.z);
 
-		if (_inputVector != Vector3.zero)
-		{
-			// Apply inputs and accelerate character
-			targetMovementVelocity = _inputVector * MovementProfile._baseMaxSpeed * _currentSpeedMultiplier;
-			currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity, 1 - Mathf.Exp(-MovementProfile._acceleration * deltaTime));
+		// Apply inputs and accelerate character
+		float currentSpeed = Vector3.Dot(flatVelocity, _inputVector);
+		float maxSpeed = MovementProfile.BaseMaxSpeed * _currentSpeedMultiplier;
+		float addSpeed = maxSpeed - currentSpeed;
+
+		if (addSpeed <= 0)
+			return;
+
+		float accelSpeed = MovementProfile.Acceleration * deltaTime * maxSpeed;
+		if (accelSpeed > addSpeed)
+			accelSpeed = addSpeed;
+
+		currentVelocity += accelSpeed * _inputVector;
+	}
+
+	private void ApplyFriction(ref Vector3 currentVelocity, float friction, float deltaTime) {
+		Vector3 flatVelocity = new Vector3(currentVelocity.x, 0, currentVelocity.z);
+		float speed = flatVelocity.magnitude;
+		if (speed < 0.01f) {
+			currentVelocity = new Vector3(0, currentVelocity.y, 0);
+			return;
 		}
-		else
-		{
-			// Apply friction since no input
-			targetMovementVelocity = new Vector3(0, currentVelocity.y, 0);
-			currentVelocity = Vector3.Lerp(currentVelocity, targetMovementVelocity, 1 - Mathf.Exp(-MovementProfile._friction * deltaTime));
-		}
+
+		float drop = 0;
+		var control = speed < 0.1f ? 0.1f : speed;
+		drop += control * friction * deltaTime;
+
+		float newspeed = speed - drop;
+		if (newspeed < 0)
+			newspeed = 0;
+		newspeed = newspeed / speed;
+
+		currentVelocity = new Vector3(currentVelocity.x * newspeed, currentVelocity.y, currentVelocity.z * newspeed);
 	}
 	
 	
@@ -146,17 +164,45 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 	 */
 	private void PerformUngroundedMovement(ref Vector3 currentVelocity, float deltaTime)
 	{
-		if (_inputVector.sqrMagnitude > 0f)
-		{
-			currentVelocity += _inputVector.normalized * MovementProfile._airAcceleration * deltaTime;
+		Vector3 flatVelocity = new Vector3(currentVelocity.x, 0, currentVelocity.z);
+
+		// Apply inputs and accelerate character
+		float currentSpeed = Vector3.Dot(flatVelocity, _inputVector);
+		float maxSpeed = MovementProfile.BaseMaxSpeed * _currentSpeedMultiplier;
+		float addSpeed = maxSpeed - currentSpeed;
+
+		if (addSpeed <= 0) {
+			currentVelocity += Vector3.down * MovementProfile.Gravity * deltaTime;
+			return;
 		}
-		else
-		{
-			currentVelocity = Vector3.Lerp(currentVelocity, currentVelocity.y * Vector3.up, 1 - Mathf.Exp(-MovementProfile._airFriction * deltaTime));
+
+		// Get grounding data
+		Vector3 currentPosition = transform.position;
+		CharacterGroundingReport report = new CharacterGroundingReport();
+		Motor.ProbeGround(ref currentPosition, transform.rotation, 0.5f, ref report);
+		float groundAngle = Vector3.Angle(Vector3.up, report.GroundNormal);
+		// If we are not on a slope, apply the acceleration.
+		if (groundAngle <= Motor.MaxStableSlopeAngle) {
+			float accelSpeed = MovementProfile.Acceleration * deltaTime * maxSpeed;
+			if (accelSpeed > addSpeed)
+				accelSpeed = addSpeed;
+
+			currentVelocity += accelSpeed * _inputVector;
+		} else {
+			// In Slope
+			Vector3 slopeNormal = report.GroundNormal;
+			Vector3 slopePlaneNormal = Vector3.Cross(Vector3.Cross(Vector3.up, slopeNormal), slopeNormal).normalized;
+			Vector3 inputOnSlopePlane = Vector3.ProjectOnPlane(_inputVector, slopePlaneNormal);
+
+			float accelSpeed = MovementProfile.Acceleration * deltaTime * maxSpeed;
+			if (accelSpeed > addSpeed)
+				accelSpeed = addSpeed;
+
+			currentVelocity += accelSpeed * inputOnSlopePlane;
 		}
 		
 		// Gravity
-		currentVelocity += Vector3.down * MovementProfile._gravity * deltaTime;
+		currentVelocity += Vector3.down * MovementProfile.Gravity * deltaTime;
 	}
 
 
@@ -166,7 +212,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		if (_sprintRequested && CanSprint())
 		{
 			_isSprinting = true;
-			_currentSpeedMultiplier *= MovementProfile._sprintSpeedMultiplier;
+			_currentSpeedMultiplier *= MovementProfile.SprintSpeedMultiplier;
 			if (!_previousTick.Sprinting) _player.Events.FireStartSprintEvent();
 		}
 		else
@@ -193,8 +239,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		Motor.ForceUnground();
 
 		// Add to the return velocity and reset jump state
-		currentVelocity += (Vector3.up * MovementProfile._jumpPower) - Vector3.Project(currentVelocity, Motor.CharacterUp);
-		
+		currentVelocity += new Vector3(0, MovementProfile.JumpPower, 0) - Vector3.Project(currentVelocity, Motor.CharacterUp);
 		_jumpAudioEvent.Play(_audioSource);
 		_isJumping = true;
 		_player.Events.FireJumpEvent();
@@ -247,7 +292,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		if (_isJumping && Motor.GroundingStatus.FoundAnyGround)
 		{
 			if (!_jumpCR_isRunning)
-				StartCoroutine(JumpCoolDown(MovementProfile._jumpCooldown));
+				StartCoroutine(JumpCoolDown(MovementProfile.JumpCooldown));
 		}
 
 		_previousTick.Position    = transform.position;
@@ -332,7 +377,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 				{
 					_footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
 					footstepAudioEvent.Play(_audioSource,
-						(Motor.Velocity.magnitude / MovementProfile._baseMaxSpeed * _stanceSpeedMultiplier));
+						(Motor.Velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier));
 				}
 			} 
 			else
@@ -352,7 +397,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 							{
 								_footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
 								footstepAudioEvent.Play(_audioSource,
-									((Motor.Velocity.magnitude / MovementProfile._baseMaxSpeed * _stanceSpeedMultiplier) * textureValue.alpha));
+									((Motor.Velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier) * textureValue.alpha));
 							}
 						}
 					}

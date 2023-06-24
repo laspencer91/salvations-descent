@@ -4,16 +4,15 @@ using UnityEngine;
 
 [CreateAssetMenu(fileName = "Ground Movement Profile", menuName = "Game/Ground Movement Profile")]
 public class FPSGroundMovementProfile : ScriptableObject {
-	[SerializeField] public float _acceleration;
-	[SerializeField] public float _airAcceleration;
-	[SerializeField] public float _friction;
-	[SerializeField] public float _airFriction;
-	[SerializeField] public float _baseMaxSpeed;
-	[SerializeField] public float _sprintSpeedMultiplier;
-	[SerializeField] public float _gravity;
-	[SerializeField] public float _maxFallSpeed;
+	[SerializeField] public float Acceleration;
+	[SerializeField] public float Friction;
+	[SerializeField] public float AirFriction;
+	[SerializeField] public float BaseMaxSpeed;
+	[SerializeField] public float SprintSpeedMultiplier;
+	[SerializeField] public float Gravity;
+	[SerializeField] public float MaxFallSpeed;
     
 	[Header("Jumping")]
-	[SerializeField] public float _jumpPower;
-	[SerializeField] public float _jumpCooldown;
+	[SerializeField] public float JumpPower;
+	[SerializeField] public float JumpCooldown;
 }

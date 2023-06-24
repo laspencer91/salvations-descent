@@ -20,7 +20,6 @@ public abstract class FPSMovementStateController : MonoBehaviour
 	 */
     public void SetInputs(FPSInput fpsInput)
     {
-        Debug.Log("Motor", Motor);
         if (fpsInput.JumpKey)   _jumpRequested = true;
         if (fpsInput.SprintKey) _sprintRequested = true;
 		

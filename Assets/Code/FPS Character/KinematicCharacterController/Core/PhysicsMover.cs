@@ -69,6 +69,14 @@ namespace KinematicCharacterController
         /// <summary>
         /// Remembers initial position before all simulation are done
         /// </summary>
+        public Vector3 Velocity { get; protected set; }
+        /// <summary>
+        /// Remembers initial position before all simulation are done
+        /// </summary>
+        public Vector3 AngularVelocity { get; protected set; }
+        /// <summary>
+        /// Remembers initial position before all simulation are done
+        /// </summary>
         public Vector3 InitialTickPosition { get; set; }
         /// <summary>
         /// Remembers initial rotation before all simulation are done
@@ -215,8 +223,8 @@ namespace KinematicCharacterController
 
             state.Position = TransientPosition;
             state.Rotation = TransientRotation;
-            state.Velocity = Rigidbody.velocity;
-            state.AngularVelocity = Rigidbody.velocity;
+            state.Velocity = Velocity;
+            state.AngularVelocity = AngularVelocity;
 
             return state;
         }
@@ -227,8 +235,8 @@ namespace KinematicCharacterController
         public void ApplyState(PhysicsMoverState state)
         {
             SetPositionAndRotation(state.Position, state.Rotation);
-            Rigidbody.velocity = state.Velocity;
-            Rigidbody.angularVelocity = state.AngularVelocity;
+            Velocity = state.Velocity;
+            AngularVelocity = state.AngularVelocity;
         }
 
         /// <summary>
@@ -243,10 +251,10 @@ namespace KinematicCharacterController
 
             if (deltaTime > 0f)
             {
-                Rigidbody.velocity = (TransientPosition - InitialSimulationPosition) / deltaTime;
+                Velocity = (TransientPosition - InitialSimulationPosition) / deltaTime;
                                 
                 Quaternion rotationFromCurrentToGoal = TransientRotation * (Quaternion.Inverse(InitialSimulationRotation));
-                Rigidbody.angularVelocity = (Mathf.Deg2Rad * rotationFromCurrentToGoal.eulerAngles) / deltaTime;
+                AngularVelocity = (Mathf.Deg2Rad * rotationFromCurrentToGoal.eulerAngles) / deltaTime;
             }
         }
     }
