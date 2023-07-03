@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4618354087467535279}
   - component: {fileID: 6711259665054141003}
   - component: {fileID: 8943540252446382754}
+  - component: {fileID: 218538781062636890}
   m_Layer: 0
   m_Name: Tree HQ 7
   m_TagString: Untagged
@@ -25,14 +26,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 622662398393570039}
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 147.65, y: 0.11, z: 150.64}
-  m_LocalScale: {x: 1.9104, y: 1.9104, z: 1.9104}
+  m_LocalScale: {x: 1.4934497, y: 1.4934497, z: 1.4934497}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8072216530120789811}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6711259665054141003
 MeshFilter:
@@ -84,6 +85,29 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!136 &218538781062636890
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 622662398393570039}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.17077799
+  m_Height: 5.255172
+  m_Direction: 1
+  m_Center: {x: -0.010135407, y: 2.101629, z: 0.0052940366}
 --- !u!1 &8061234922343258393
 GameObject:
   m_ObjectHideFlags: 0

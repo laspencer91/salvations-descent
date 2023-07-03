@@ -95,7 +95,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		else
 		{
 			PerformUngroundedMovement(ref currentVelocity, deltaTime);
-			ApplyFriction(ref currentVelocity, MovementProfile.AirFriction, deltaTime);
+			//ApplyFriction(ref currentVelocity, MovementProfile.AirFriction, deltaTime);
 		}
 		
 		// Handle Jumping
@@ -187,7 +187,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 			if (accelSpeed > addSpeed)
 				accelSpeed = addSpeed;
 
-			currentVelocity += accelSpeed * _inputVector;
+			currentVelocity += accelSpeed / 2 * _inputVector;
 		} else {
 			// In Slope
 			Vector3 slopeNormal = report.GroundNormal;

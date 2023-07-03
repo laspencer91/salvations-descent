@@ -6,9 +6,7 @@ public class ProjectileParticleSpawner : MonoBehaviour
     public float speed = 60;
 
     public float lifetime = 2;
-    
-    private Rigidbody _rigidbody;
-    
+        
     public float hitOffset = 0f;
     
     public bool UseFirePointRotation;
@@ -21,6 +19,9 @@ public class ProjectileParticleSpawner : MonoBehaviour
     
     public GameObject[] Detached;
 
+    private Rigidbody _rigidbody;
+
+
     private void Awake()
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -30,12 +31,6 @@ public class ProjectileParticleSpawner : MonoBehaviour
     {
         _rigidbody.velocity = rayDirection * speed;
     }
-
-    private void OnCollisionEnter(Collision other)
-    {
-        HandleCollision(other);
-        Destroy(gameObject);
-    }
     
     private void Update()
     {
@@ -44,59 +39,65 @@ public class ProjectileParticleSpawner : MonoBehaviour
         {
             Destroy(gameObject);
         }
+       
     }
-    
-    public void HandleProjectileSpawn()
+
+    private RaycastHit raycastHitFromPreviousFrame;
+
+    private bool readyToProcessRaycastHit = false;
+
+    private void FixedUpdate() 
     {
-        if (flash != null)
-        {
-            var flashInstance = Instantiate(flash, transform.position, Quaternion.identity);
-            flashInstance.transform.forward = gameObject.transform.forward;
-            var flashPs = flashInstance.GetComponent<ParticleSystem>();
-            if (flashPs != null)
-            {
-                Destroy(flashInstance, flashPs.main.duration);
-            }
-            else
-            {
-                var flashPsParts = flashInstance.transform.GetChild(0).GetComponent<ParticleSystem>();
-                Destroy(flashInstance, flashPsParts.main.duration);
-            }
-        }
-        Destroy(gameObject,5);
-	}
+        CheckForCollision();
+    }
 
-    public void HandleCollision(Collision collision)
+    private void CheckForCollision()
     {
-        ContactPoint contact = collision.contacts[0];
-        Quaternion rot = Quaternion.FromToRotation(Vector3.up, contact.normal);
-        Vector3 pos = contact.point + contact.normal * hitOffset;
-
-        if (hit != null)
+        if (readyToProcessRaycastHit) 
         {
-            var hitInstance = Instantiate(hit, pos, rot);
-            if (UseFirePointRotation) { hitInstance.transform.rotation = gameObject.transform.rotation * Quaternion.Euler(0, 180f, 0); }
-            else if (rotationOffset != Vector3.zero) { hitInstance.transform.rotation = Quaternion.Euler(rotationOffset); }
-            else { hitInstance.transform.LookAt(contact.point + contact.normal); }
+            // Get rotation from normal
+            Quaternion rot = Quaternion.FromToRotation(Vector3.up, raycastHitFromPreviousFrame.normal);
+            Vector3 pos = raycastHitFromPreviousFrame.point;
+            // Create the hit particle system gameobject
+            var createParticleSystemInstance = Instantiate(hit, pos, rot);
 
-            var hitPs = hitInstance.GetComponent<ParticleSystem>();
+            if (rotationOffset != Vector3.zero) 
+            { 
+                createParticleSystemInstance.transform.rotation = Quaternion.Euler(rotationOffset); 
+            }
+            else 
+            { 
+                createParticleSystemInstance.transform.LookAt(raycastHitFromPreviousFrame.point + raycastHitFromPreviousFrame.normal); 
+            }
+
+            Destroy(gameObject);
+
+            // Set Particle System To Die
+            var hitPs = createParticleSystemInstance.GetComponent<ParticleSystem>();
             if (hitPs != null)
             {
-                Destroy(hitInstance, hitPs.main.duration);
+                Destroy(createParticleSystemInstance, 5);
             }
             else
             {
-                var hitPsParts = hitInstance.transform.GetChild(0).GetComponent<ParticleSystem>();
-                Destroy(hitInstance, hitPsParts.main.duration);
+                var hitPsParts = createParticleSystemInstance.transform.GetChild(0).GetComponent<ParticleSystem>();
+                Destroy(createParticleSystemInstance, 5);
             }
+
+            return;
         }
-        
-        foreach (var detachedPrefab in Detached)
+
+        RaycastHit raycastHit;
+        if (Physics.Raycast(transform.position, _rigidbody.velocity.normalized, out raycastHit, _rigidbody.velocity.magnitude * Time.fixedDeltaTime)) 
         {
-            if (detachedPrefab != null)
+            if (LayerMask.LayerToName(raycastHit.collider.gameObject.layer) == "Player") 
             {
-                detachedPrefab.transform.parent = null;
+                Debug.LogWarning("Hit Player");
+                return;
             }
+
+            raycastHitFromPreviousFrame = raycastHit;
+            readyToProcessRaycastHit = true;
         }
     }
 }

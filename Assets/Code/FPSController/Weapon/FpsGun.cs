@@ -2,12 +2,25 @@ using System;
 using _Systems.Audio;
 using UnityEngine;
 using UnityEngine.Events;
+using Sirenix.OdinInspector;
 
 [RequireComponent(typeof(AudioSource))]
 public class FpsGun : MonoBehaviour
 {
     public GunType Type;
+
+    public bool isRaycastWeapon = false;
+
+    [HideIf("isRaycastWeapon")]
+    public ProjectileParticleSpawner projectilePrefab;
+
+    [HideIf("isRaycastWeapon")]
+    public GameObject projectileSpawnTransform;
     
+    [ShowIf("isRaycastWeapon")]
+    [Tooltip("This is the particle to be spawned on hit for this weapon.")]
+    public GameObject raycastHitEffectPrefab;
+
     public float fireRate = 1;
 
     public bool clickToShoot = true;
@@ -15,10 +28,6 @@ public class FpsGun : MonoBehaviour
     public float recoilDistance = 0.01f;
 
     public float recoilRecoverSpeed = 5f;
-
-    public ProjectileParticleSpawner projectilePrefab;
-
-    public GameObject projectileSpawnTransform;
     
     public AudioEvent shootAudioEvent;
 
@@ -65,14 +74,39 @@ public class FpsGun : MonoBehaviour
                 transform.localPosition = Vector3.back * recoilDistance;
                 fireRateTimer = fireRate;
 
-                var projectile = Instantiate(projectilePrefab, projectileSpawnTransform.transform.position,
-                    Camera.main.transform.rotation);
-                projectile.gameObject.layer = LayerMask.NameToLayer("Player");
+                if (!isRaycastWeapon) 
+                {
+                    // Handle Projectile Based Weapon Firing
+                    var projectile = Instantiate(projectilePrefab, projectileSpawnTransform.transform.position,
+                        Camera.main.transform.rotation);
+                    projectile.gameObject.layer = LayerMask.NameToLayer("Player");
 
-                float x = Screen.width / 2;
-                float y = Screen.height / 2;
-                var ray = Camera.main.ScreenPointToRay(new Vector3(x, y, 0));
-                projectile.SetDirection(ray.direction);
+                    float x = Screen.width / 2;
+                    float y = Screen.height / 2;
+                    var ray = Camera.main.ScreenPointToRay(new Vector3(x, y, 0));
+                    projectile.SetDirection(ray.direction);
+                }
+                else
+                {
+                    // Handle Raycast Weapon Firing
+                    Vector3 rayOrigin = Camera.main.ViewportToWorldPoint (new Vector3(0.5f, 0.5f, 0.0f));
+
+                    // Declare a raycast hit to store information about what our raycast has hit
+                    RaycastHit raycastHit;
+
+                    int layerMask = ~(1 << LayerMask.NameToLayer("Player"));
+
+                    if (Physics.Raycast(rayOrigin, Camera.main.transform.forward, out raycastHit, Mathf.Infinity, layerMask))
+                    {
+                        // Get rotation from normal
+                        Quaternion rot = Quaternion.FromToRotation(Vector3.up, raycastHit.normal);
+                        Vector3 pos = raycastHit.point;
+                        // Create the hit particle system gameobject
+                        var createdParticleSystem = Instantiate(raycastHitEffectPrefab, pos, rot);
+                        createdParticleSystem.transform.LookAt(raycastHit.point + raycastHit.normal); 
+                        Destroy(createdParticleSystem, 8); // TODO: change how this operates.
+                    }
+                }
             }
         }
         else

@@ -42,7 +42,7 @@ public class FPSMouseLook : MonoBehaviour
         smoothV.x = Mathf.Lerp(smoothV.x, mouseChange.x, 1f / m_LookSmoothing);
         smoothV.y = Mathf.Lerp(smoothV.y, mouseChange.y, 1f / m_LookSmoothing);
 
-        mouseLook  += smoothV * Time.deltaTime * GameSettings.FPS_MULTIPLIER;
+        mouseLook  += smoothV;
         mouseLook.y = Mathf.Clamp(mouseLook.y, m_PitchMin, m_PitchMax);
 
         // Horizontal Rotation: Rotate body. Not Camera

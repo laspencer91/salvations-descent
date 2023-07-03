@@ -1,19 +1,26 @@
 using System.Collections;
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 public class HeadBob : MonoBehaviour 
 {
-    public float bobSpeed = 4.8f; //how quickly the player's head bobs.
-    public float bobAmount = 0.05f; //how dramatic the bob is. Increasing this in conjunction with bobSpeed gives a nice effect for sprinting.
-    public float swayAmount = 0.15f;
-    public float idleReturnSpeed = 0.05f; //smooths out the transition from moving to not moving.
-    public AnimationCurve landingCurve;
-    public float groundLandingVerticalOffsetDistance = 0.05f;
-    public float groundLandingOffsetRecoverySpeed = 5f;
     public GameObject cameraArm;
+    public Transform cameraTiltArm;
     public Transform weaponHolder;
-    public float weaponHolderBobDampen = 0.5f;
-    public float weaponHolderSwayDampen = 0.5f;
+
+    [FoldoutGroup("HeadBob")] public float bobSpeed = 4.8f;
+    [FoldoutGroup("HeadBob")] public float bobAmount = 0.05f;
+    [FoldoutGroup("HeadBob")] public float swayAmount = 0.15f;
+    [FoldoutGroup("HeadBob")] public float idleReturnSpeed = 0.05f; //smooths out the transition from moving to not moving.
+
+    [FoldoutGroup("Landing")] public AnimationCurve landingCurve;
+    [FoldoutGroup("Landing")] public float groundLandingVerticalOffsetDistance = 0.05f;
+    [FoldoutGroup("Landing")] public float groundLandingOffsetRecoverySpeed = 5f;
+
+    [FoldoutGroup("Weapon Animation")] public float weaponHolderBobDampen = 0.5f;
+    [FoldoutGroup("Weapon Animation")] public float weaponHolderSwayDampen = 0.5f;
+
+    [FoldoutGroup("Camera Tilt")] public float cameraTiltAmount = 0.5f;
 
     private float timer = Mathf.PI;
     private float verticalOffsetAnimTimer = 0;
@@ -57,7 +64,10 @@ public class HeadBob : MonoBehaviour
         Vector3 camArmDifference = cameraArm.transform.localPosition - camArmRestPosition;
 
         weaponHolder.localPosition = new Vector3((gunRestPosition.x + camArmDifference.x * weaponHolderSwayDampen), (gunRestPosition.y - 0.3f + camArmDifference.y * weaponHolderBobDampen), gunRestPosition.z);
+
         weaponHolder.rotation = Quaternion.LookRotation(Camera.main.transform.forward, transform.up);
+
+        UpdateCameraTilt();
 
         if (timer > Mathf.PI * 2)
             timer -= Mathf.PI * 2;
@@ -66,6 +76,16 @@ public class HeadBob : MonoBehaviour
     private Vector3 CalculateVerticalOffset() {
         verticalOffsetAnimTimer -= groundLandingOffsetRecoverySpeed * Time.deltaTime;
         return Vector3.down * landingCurve.Evaluate(verticalOffsetAnimTimer) * groundLandingVerticalOffsetDistance;
+    }
+
+    private void UpdateCameraTilt() {
+        // Get the horizontal velocity of the character
+        Vector3 characterVelocity = transform.InverseTransformDirection(smoothMovement.Motor.Velocity);
+        float horizontalVelocity = characterVelocity.x;
+
+        // Apply the tilt to the camera rotation
+        Quaternion targetRotation = Quaternion.Euler(cameraTiltArm.localEulerAngles.x, cameraTiltArm.localEulerAngles.y, cameraTiltAmount * -horizontalVelocity);
+        cameraTiltArm.localRotation = Quaternion.Lerp(cameraTiltArm.localRotation, targetRotation, Time.deltaTime * 10f);
     }
 
     public void OnGroundLanding() {

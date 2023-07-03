@@ -8,14 +8,17 @@ namespace _Systems.Audio
     public class MaterialToFootstepAudioEventConfiguration : SerializedScriptableObject
     {
         public AudioEvent fallbackFootstepAudioEvent;
-        public Dictionary<Texture, AudioEvent> MatTypeToAudioEventDictionary = new Dictionary<Texture, AudioEvent>();
+        public Dictionary<string, AudioEvent> MatTypeToAudioEventDictionary = new Dictionary<string, AudioEvent>();
 
         public AudioEvent GetFootstepAudioEventForMaterial(Texture texture)
         {
-            if (MatTypeToAudioEventDictionary.ContainsKey(texture)) 
+            // Cycle through each material key of the sound definition file. Return the AudioEvent if the texture name begins with the key.
+            foreach (var key in MatTypeToAudioEventDictionary.Keys) 
             {
-                return MatTypeToAudioEventDictionary[texture];
+                if (texture.name.StartsWith(key)) 
+                    return MatTypeToAudioEventDictionary[key];
             }
+
             Debug.LogWarning("Material: " + texture.name + " is not set up in the Material Sound Definition Asset.");
             return fallbackFootstepAudioEvent;
         }

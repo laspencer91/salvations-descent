@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: JumpAudioEvent
   m_EditorClassIdentifier: 
   audioClips:
-  - {fileID: 8300000, guid: 4916a8ba31615664cad14d66d6306952, type: 3}
-  volume: 0.5
+  - {fileID: 8300000, guid: a055ae87296e2ab4983bae59cad0466a, type: 3}
+  volume: 0.3
   pitchVariation: {x: 0.95, y: 1.05}
