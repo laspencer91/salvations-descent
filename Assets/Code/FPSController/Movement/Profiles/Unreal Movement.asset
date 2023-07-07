@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Acceleration: 7
   Friction: 8
-  AirFriction: 10
+  AirFriction: 1.3
   BaseMaxSpeed: 11
   SprintSpeedMultiplier: 2
   Gravity: 25

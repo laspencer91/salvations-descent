@@ -7,6 +7,8 @@ using KinematicCharacterController;
 using KinematicCharacterController.Walkthrough.ClimbingLadders;
 using unity.Assets._Scripts.FPS.Movement.Types;
 using UnityEngine;
+using UnityEngine.ProBuilder;
+using Cinemachine;
 
 [RequireComponent(typeof(KinematicCharacterMotor))]
 public class FPSGroundStateController : FPSMovementStateController, ICharacterController
@@ -15,6 +17,8 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
     
 	[Header("Jumping")]
 	[SerializeField] private AudioEvent _jumpAudioEvent;
+	[Header("Jumping")]
+	public float MaximumFallImpactImpulseForce = 0.5f;
 	
 	[Header("Audio")] 
 	[SerializeField] private MaterialToFootstepAudioEventConfiguration _footstepEventConfiguration;
@@ -25,6 +29,8 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 
 	private AudioSource _audioSource;
 	
+	private CinemachineImpulseSource impulseSource;
+
 	// Objects
 	private FrameState       _previousTick;			// State at the end of the Previous Fixed Update
 	private FPSStanceHandler _stanceHandler;        // Reference to the handler assigned to this player
@@ -34,10 +40,10 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 	// State
 	private bool    _isJumping;						// Are we in a jumping state
 	private bool    _isOnSlope;						// Are we on a slope?
-	private bool    _isSprinting;					// Are we sprinting?
 	private float   _startingStepOffset;			// The Step Offset that the game begins with, matching Inspector
 	private float   _currentSpeedMultiplier = 1;    // Current speed multiplier. Calculated each frame
 	private float   _stanceSpeedMultiplier = 1;     // Speed multiplier from current stance.
+	private Vector3 ungroundedStartPosition = Vector3.zero;
 
 	private bool _isActiveState = false;
 
@@ -48,6 +54,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		_player        = GetComponent<FPSPlayer>();
 		_fpsMouseLook  = GetComponent<FPSMouseLook>();
 		_audioSource   = GetComponent<AudioSource>();
+		impulseSource  = GetComponent<CinemachineImpulseSource>();
 	}
 
 	public override void EnterState()
@@ -72,7 +79,7 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 			else
 			{
 				// Find material under player, look up the audio to play, and play it.
-				HandleFootstepAudio();
+				HandleFootstepAudio(Motor.Velocity);
 			}
 		}
 	}
@@ -83,9 +90,6 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 	 */
 	public void UpdateVelocity(ref Vector3 currentVelocity, float deltaTime)
 	{
-		// Apply Speed Multipliers : Handle Sprinting Input
-		// HandleSprintRequest();
-
 		// Handle Base Movement
 		if (Motor.GroundingStatus.IsStableOnGround)
 		{
@@ -93,9 +97,9 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 			ApplyFriction(ref currentVelocity, MovementProfile.Friction, deltaTime);
 		}
 		else
-		{
+		{	
 			PerformUngroundedMovement(ref currentVelocity, deltaTime);
-			//ApplyFriction(ref currentVelocity, MovementProfile.AirFriction, deltaTime);
+			ApplyFriction(ref currentVelocity, MovementProfile.AirFriction, deltaTime);
 		}
 		
 		// Handle Jumping
@@ -138,7 +142,8 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		currentVelocity += accelSpeed * _inputVector;
 	}
 
-	private void ApplyFriction(ref Vector3 currentVelocity, float friction, float deltaTime) {
+	private void ApplyFriction(ref Vector3 currentVelocity, float friction, float deltaTime) 
+	{
 		Vector3 flatVelocity = new Vector3(currentVelocity.x, 0, currentVelocity.z);
 		float speed = flatVelocity.magnitude;
 		if (speed < 0.01f) {
@@ -181,51 +186,19 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		CharacterGroundingReport report = new CharacterGroundingReport();
 		Motor.ProbeGround(ref currentPosition, transform.rotation, 0.5f, ref report);
 		float groundAngle = Vector3.Angle(Vector3.up, report.GroundNormal);
+		
 		// If we are not on a slope, apply the acceleration.
-		if (groundAngle <= Motor.MaxStableSlopeAngle) {
+		if (groundAngle <= Motor.MaxStableSlopeAngle) 
+		{
 			float accelSpeed = MovementProfile.Acceleration * deltaTime * maxSpeed;
 			if (accelSpeed > addSpeed)
 				accelSpeed = addSpeed;
 
 			currentVelocity += accelSpeed / 2 * _inputVector;
-		} else {
-			// In Slope
-			Vector3 slopeNormal = report.GroundNormal;
-			Vector3 slopePlaneNormal = Vector3.Cross(Vector3.Cross(Vector3.up, slopeNormal), slopeNormal).normalized;
-			Vector3 inputOnSlopePlane = Vector3.ProjectOnPlane(_inputVector, slopePlaneNormal);
-
-			float accelSpeed = MovementProfile.Acceleration * deltaTime * maxSpeed;
-			if (accelSpeed > addSpeed)
-				accelSpeed = addSpeed;
-
-			currentVelocity += accelSpeed * inputOnSlopePlane;
 		}
 		
 		// Gravity
 		currentVelocity += Vector3.down * MovementProfile.Gravity * deltaTime;
-	}
-
-
-	void HandleSprintRequest()
-	{
-		_currentSpeedMultiplier = _stanceSpeedMultiplier;
-		if (_sprintRequested && CanSprint())
-		{
-			_isSprinting = true;
-			_currentSpeedMultiplier *= MovementProfile.SprintSpeedMultiplier;
-			if (!_previousTick.Sprinting) _player.Events.FireStartSprintEvent();
-		}
-		else
-		{
-			_isSprinting = false;
-			if (_previousTick.Sprinting)  _player.Events.FireEndSprintEvent();
-		}
-	}
-	
-
-	private bool CanSprint()
-	{
-		return _player.CanSprint && _inputVector != Vector3.zero;
 	}
 	
 
@@ -295,11 +268,19 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 				StartCoroutine(JumpCoolDown(MovementProfile.JumpCooldown));
 		}
 
+		// Handle landing on ground animation.
+		if (Motor.Velocity.y == 0 && _previousTick.Velocity.y < -0.05f)
+		{
+			float impulseForce = (_previousTick.Velocity.y / MovementProfile.MaxFallSpeed) * MaximumFallImpactImpulseForce;
+			impulseSource.GenerateImpulseWithForce(Mathf.Abs(impulseForce));
+			HandleFootstepAudio(_previousTick.Velocity);
+		}
+
 		_previousTick.Position    = transform.position;
 		_previousTick.Grounded    = Motor.GroundingStatus.IsStableOnGround;
 		_previousTick.Jumping     = _isJumping;
 		_previousTick.InputVector = _inputVector;
-		_previousTick.Sprinting   = _isSprinting;
+		_previousTick.Velocity    = Motor.Velocity;
 		
 		ResetInputs();
 	}
@@ -314,16 +295,10 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		}
 	}
 
-	public void BeforeCharacterUpdate(float deltaTime)
-	{
-
-	}
+	public void BeforeCharacterUpdate(float deltaTime){}
 
 	
-	public void PostGroundingUpdate(float deltaTime)
-	{
-		
-	}
+	public void PostGroundingUpdate(float deltaTime){}
 
 	
 	public bool IsColliderValidForCollisions(Collider coll)
@@ -332,35 +307,20 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 	}
 
 	
-	public void OnGroundHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport)
-	{
-		if (!_previousTick.Grounded)
-		{
-			//HandleFootstepAudio();
-		}
-	}
+	public void OnGroundHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport){}
 
 	
-	public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint,
-		ref HitStabilityReport hitStabilityReport)
-	{
-	}
+	public void OnMovementHit(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, ref HitStabilityReport hitStabilityReport){}
 
 	
 	public void ProcessHitStabilityReport(Collider hitCollider, Vector3 hitNormal, Vector3 hitPoint, Vector3 atCharacterPosition,
-		Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport)
-	{
-		
-	}
+		Quaternion atCharacterRotation, ref HitStabilityReport hitStabilityReport){}
 
-	public void OnDiscreteCollisionDetected(Collider hitCollider)
-	{
-		Debug.Log("Discrete Collision With", hitCollider);
-	}
+	public void OnDiscreteCollisionDetected(Collider hitCollider){}
 
 	#endregion
 
-	void HandleFootstepAudio()
+	void HandleFootstepAudio(Vector3 velocity)
 	{
 		Ray footstepRay = new Ray(transform.position, Vector3.down);
 		RaycastHit hit;
@@ -368,8 +328,25 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 		if (Physics.Raycast(footstepRay, out hit)) 
 		{
 			MeshRenderer hitRenderer = hit.transform.GetComponent<MeshRenderer>();
-			if (hitRenderer != null) 
+
+			ProBuilderMesh pbMesh = hit.collider.GetComponent<ProBuilderMesh>();
+			if (pbMesh)
 			{
+				// Probuilder Collisions
+				var texture = FindSubmeshTexture(pbMesh.GetComponent<MeshCollider>(), hit);
+				
+				AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(texture);
+
+				if (footstepAudioEvent)
+				{
+					_footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
+					footstepAudioEvent.Play(_audioSource,
+						(velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier));
+				}
+			}
+			else if (hitRenderer != null) 
+			{
+				// Standard Mesh Collisions
 				// Find the correct audio event from the assigned AudioEventDictionary.
 				AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(hitRenderer.sharedMaterial.mainTexture);
 				
@@ -377,11 +354,12 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 				{
 					_footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
 					footstepAudioEvent.Play(_audioSource,
-						(Motor.Velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier));
+						(velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier));
 				}
 			} 
 			else
 			{
+				// Terrain Collisions
 				TerrainCollider terrainCollider = hit.collider.GetComponent<TerrainCollider>();
 				if (terrainCollider) 
 				{
@@ -392,17 +370,39 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 						{
 							// Find the correct audio event from the assigned AudioEventDictionary.
 							AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(textureValue.texture);
-							Debug.Log("Footstep Audio Event: " + footstepAudioEvent.name);
+
 							if (footstepAudioEvent)
 							{
 								_footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
 								footstepAudioEvent.Play(_audioSource,
-									((Motor.Velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier) * textureValue.alpha));
+									((velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier) * textureValue.alpha));
 							}
 						}
 					}
 				}
 			}
+
 		}
+	}
+
+	/** Used to detect submesh texture for probuilder. Should probably go to a Utility class. **/
+	private Texture FindSubmeshTexture(MeshCollider collider, RaycastHit hit)
+	{
+		Mesh mesh = collider.sharedMesh;
+
+		// There are 3 indices stored per triangle
+		int limit = hit.triangleIndex * 3;
+		int submesh;
+		for (submesh = 0; submesh < mesh.subMeshCount; submesh++)
+		{
+			int numIndices = mesh.GetTriangles(submesh).Length;
+			if (numIndices > limit)
+				break;
+
+			limit -= numIndices;
+		}
+		Texture myTexture = hit.collider.GetComponent<MeshRenderer>().sharedMaterials[submesh].mainTexture;
+
+		return myTexture;
 	}
 }
