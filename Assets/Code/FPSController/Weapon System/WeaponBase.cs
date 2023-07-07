@@ -51,7 +51,8 @@ public abstract class WeaponBase : MonoBehaviour
     
     private float fireRateTimer = 0;
 
-    private bool shootingEnabled = true;
+    [HideInInspector]
+    public bool IsShootingEnabled = true;
     
     private AudioSource audioSource;
 
@@ -68,12 +69,12 @@ public abstract class WeaponBase : MonoBehaviour
     private void OnEnable()
     {
         animator.Play("GunIntoFrame");
-        shootingEnabled = false;
+        IsShootingEnabled = false;
     }
 
     void Update()
     {
-        if (shootingEnabled)
+        if (IsShootingEnabled)
         {
             if (!IsReloading) 
             {
@@ -138,7 +139,7 @@ public abstract class WeaponBase : MonoBehaviour
         yield return new WaitForSeconds(2f);
         animator.SetBool("IsReloading", false);
 
-        shootingEnabled = false;
+        IsShootingEnabled = false;
 
         IsReloading = false;
         int loadedAmmoCount = Math.Min(ShotsPerReload, CurrentAmmoOnBelt);
@@ -169,6 +170,6 @@ public abstract class WeaponBase : MonoBehaviour
     public void EnableShooting()
     {
         animator.enabled = false;
-        shootingEnabled = true;
+        IsShootingEnabled = true;
     }
 }

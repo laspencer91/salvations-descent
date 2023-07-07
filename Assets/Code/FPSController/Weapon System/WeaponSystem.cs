@@ -47,7 +47,7 @@ public class WeaponSystem : MonoBehaviour
 
     void EquipGun(GunType type)
     {
-        if (currentlyActiveGun != null && currentlyActiveGun.Type == type) return;
+        if (currentlyActiveGun != null && (currentlyActiveGun.Type == type || !currentlyActiveGun.IsShootingEnabled)) return;
         
         if (OwnedGuns.Contains(type))
         {

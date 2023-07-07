@@ -50,7 +50,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ec2ee2ed049714d758902f05a772f76a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Hitpoints: 1
+  Hitpoints: 2
   DestructionEffectPrefab: {fileID: 2477931779218546399, guid: 9b5c5465e51664d71aded5dde7a46e00, type: 3}
   DestructionSoundEffect: {fileID: 11400000, guid: a047e28ea9ce44ee5bd812244fc70702, type: 2}
 --- !u!82 &2540306894894176584

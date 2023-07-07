@@ -12,25 +12,29 @@ public class ShotgunRaycastWeapon : WeaponBase
     public GameObject RaycastHitEffectPrefab;
 
     [BoxGroup("Shotgun Raycast Weapon Properties")]
+    public float BulletSpreadModifier = 10;
+
+    [BoxGroup("Shotgun Raycast Weapon Properties")]
     public Vector2[] BulletAngles = Array.Empty<Vector2>();
 
     protected override void Fire()
     {
         // Calculate the angle between each raycast
         Vector3 rayOrigin = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0.0f));
+        Camera mainCamera = Camera.main;
 
         int layerMask = ~(1 << LayerMask.NameToLayer("Player"));
 
         for (int i = 0; i < BulletAngles.Length; i++)
         {
-            // Calculate the direction of the current raycast with spread
-            Quaternion spreadRotation = Quaternion.Euler(0f, BulletAngles[i].x, BulletAngles[i].y);
-            Vector3 rayDirection = spreadRotation * Camera.main.transform.forward;
-
             // Declare a raycast hit to store information about what our raycast has hit
             RaycastHit raycastHit;
 
-            if (Physics.Raycast(rayOrigin, rayDirection, out raycastHit, Mathf.Infinity, layerMask))
+            Vector3 screenCenter = new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
+            Vector3 screenOffset = new Vector3(BulletAngles[i].x, BulletAngles[i].y, 0f) * BulletSpreadModifier;
+            Ray ray =  mainCamera.ScreenPointToRay(screenCenter + screenOffset);
+
+            if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity, layerMask))
             {
                 // Get rotation from normal
                 Quaternion rot = Quaternion.FromToRotation(Vector3.up, raycastHit.normal);
