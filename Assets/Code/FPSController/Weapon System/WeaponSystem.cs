@@ -4,18 +4,27 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class FPSGunHandler : MonoBehaviour
+[Serializable]
+public enum GunType
 {
-    private List<FpsGun> allGuns = new List<FpsGun>();
+    Gipapang,
+    RedemptionRevolver,
+    Rifle,
+    DamnatorShotgun,
+}
+
+public class WeaponSystem : MonoBehaviour
+{
+    private List<WeaponBase> allGuns = new List<WeaponBase>();
 
     public List<GunType> OwnedGuns = new List<GunType>();
 
-    private FpsGun currentlyActiveGun; 
+    private WeaponBase currentlyActiveGun; 
     
     // Start is called before the first frame update
     void Awake()
     {
-        allGuns = GetComponentsInChildren<FpsGun>().ToList();
+        allGuns = GetComponentsInChildren<WeaponBase>().ToList();
         allGuns.ForEach((gun) => gun.gameObject.SetActive(false));
         
         if (currentlyActiveGun == null && OwnedGuns.Count > 0)
@@ -32,7 +41,7 @@ public class FPSGunHandler : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            EquipGun(GunType.Rifle);
+            EquipGun(GunType.DamnatorShotgun);
         }
     }
 
@@ -62,12 +71,4 @@ public class FPSGunHandler : MonoBehaviour
             }
         }
     }
-}
-
-[Flags]
-public enum GunType
-{
-    Gipapang,
-    Pistol,
-    Rifle
 }

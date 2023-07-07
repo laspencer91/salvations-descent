@@ -40,14 +40,5 @@ namespace EventManagement
         {
             OnEndSprint?.Invoke();
         }
-       
-        
-        // ADS
-        public delegate void ADSToggle(bool _isAds);
-        public ADSToggle OnADSToggle;
-        public void FireADSToggleEvent(bool _isAds)
-        {
-            OnADSToggle?.Invoke(_isAds);
-        }
     }
 }

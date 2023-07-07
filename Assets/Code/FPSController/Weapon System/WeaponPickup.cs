@@ -11,24 +11,22 @@ public class WeaponPickup : MonoBehaviour
     private GunType type;
     
     [SerializeField]
-    private float _rotationAnglesPerSecond = 180;
+    private float rotationAnglesPerSecond = 180;
 
     [SerializeField]
-    private AudioEvent _pickupAudioEvent;
-    
-    private SphereCollider _pickupTriggerArea;
-    
+    private AudioEvent pickupAudioEvent;
+        
     void Update()
     {
-        transform.Rotate(transform.up, _rotationAnglesPerSecond * Time.deltaTime);
+        transform.RotateAround(transform.position, Vector3.up, rotationAnglesPerSecond * Time.deltaTime);
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            other.gameObject.GetComponentInChildren<FPSGunHandler>().AddToArsenal(type);
-            _pickupAudioEvent.Play(other.gameObject.GetComponent<AudioSource>());
+            other.gameObject.GetComponentInChildren<WeaponSystem>().AddToArsenal(type);
+            pickupAudioEvent.Play(other.gameObject.GetComponent<AudioSource>());
             Destroy(gameObject);
         }
     }

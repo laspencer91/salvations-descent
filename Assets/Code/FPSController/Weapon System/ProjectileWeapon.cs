@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using Sirenix.OdinInspector;
 
-public class FpsGun : WeaponBase
+public class ProjectileWeapon : WeaponBase
 {
     public Projectile projectilePrefab;
     public GameObject projectileSpawnTransform;

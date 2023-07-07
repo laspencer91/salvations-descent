@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f736da118cbc44d8bcdf1c87795dd41f, type: 3}
-  m_Name: Gipapang Pickup
+  m_Name: sfx - Shotgun Pickup
   m_EditorClassIdentifier: 
   audioClips:
-  - {fileID: 8300000, guid: 963209ef2bc554b48a3773b2aea9203d, type: 3}
-  volume: 0.3
-  pitchVariation: {x: 0.95, y: 0.95}
+  - {fileID: 8300000, guid: c2ee543f5ec76fc4499185249dd867d1, type: 3}
+  volume: 0.7
+  pitchVariation: {x: 1, y: 1}
