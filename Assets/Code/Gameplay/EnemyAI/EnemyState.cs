@@ -1,6 +1,5 @@
-enum EnemyState 
+public enum EnemyState 
 {
-    Passive,
-    Pursuing,
+    Idle,
     Attacking,
 }

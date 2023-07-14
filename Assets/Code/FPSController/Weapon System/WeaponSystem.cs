@@ -71,4 +71,9 @@ public class WeaponSystem : MonoBehaviour
             }
         }
     }
+
+    public WeaponBase GetCurrentWeapon()
+    {
+        return currentlyActiveGun;
+    }
 }

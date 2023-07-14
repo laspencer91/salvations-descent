@@ -1,34 +1,35 @@
-﻿using _Systems.FPS_Character.FPSController.Scripts.Movement;
+﻿using _Systems.Audio;
+using _Systems.FPS_Character.FPSController.Scripts.Movement;
 using EventManagement;
 using KinematicCharacterController;
 using Sirenix.OdinInspector;
 using UnityEngine;
 
-[RequireComponent(typeof(FPSStanceHandler), typeof(FPSGroundStateController))]
+[RequireComponent(typeof(FPSStanceHandler), typeof(FPSGroundStateController), typeof(AudioSource))]
 public class FPSPlayer : MonoBehaviour
 {
+    public KinematicCharacterMotor Motor;
+
+    public int CurrentHealth = 100;
+
+    public AudioEvent TakeDamageAudioEvent;
+
     // Components
     private FPSStanceHandler      _stanceHandler;
     private FPSInput              _input;
     private FPSMovementStateController    _activeMovementController;
     private FPSMovementStateController    _groundMovementController;
     private FPSMovementStateController    _ladderMovementController;
+    private AudioSource audioSource;
     
     // Event management system that is accessable from all child components. This is a good
     // way for components to listen for messages between each other without being tightly coupled.
     public readonly PlayerEvents Events = new PlayerEvents();
     
-    // Global State For The Entire FPS System To Use
-    public bool CanSprint { get; set; }
-
-    public KinematicCharacterMotor Motor;
-    
     void Awake()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        CanSprint = true;
         
         _stanceHandler            = GetComponent<FPSStanceHandler>();
         _groundMovementController = GetComponent<FPSGroundStateController>();
@@ -36,8 +37,18 @@ public class FPSPlayer : MonoBehaviour
 
         _groundMovementController.Motor = Motor;
         _ladderMovementController.Motor = Motor;
+
+        audioSource = GetComponent<AudioSource>();
         
         SetCharacterControllerState(CharacterControllerState.GroundMovement);
+    }
+
+    public void TakeDamage(int damage)
+    {
+        CurrentHealth -= damage;
+        ScreenFlash.FlashScreen(FlashType.Damage);
+        TakeDamageAudioEvent.Play(audioSource);
+        Debug.Log("Took Damage, Current Health: " + CurrentHealth);
     }
 
     [Button]

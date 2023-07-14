@@ -7,6 +7,9 @@ using Sirenix.OdinInspector;
 public class ShotgunRaycastWeapon : WeaponBase
 {
     [BoxGroup("Shotgun Raycast Weapon Properties")]
+    public LayerMask raycastDetectionLayers;
+    
+    [BoxGroup("Shotgun Raycast Weapon Properties")]
     [Tooltip("This is the particle to be spawned on hit for this weapon.")]
     [Required]
     public GameObject RaycastHitEffectPrefab;
@@ -23,7 +26,6 @@ public class ShotgunRaycastWeapon : WeaponBase
         Vector3 rayOrigin = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0.0f));
         Camera mainCamera = Camera.main;
 
-        int layerMask = ~(1 << LayerMask.NameToLayer("Player"));
 
         for (int i = 0; i < BulletAngles.Length; i++)
         {
@@ -34,8 +36,9 @@ public class ShotgunRaycastWeapon : WeaponBase
             Vector3 screenOffset = new Vector3(BulletAngles[i].x, BulletAngles[i].y, 0f) * BulletSpreadModifier;
             Ray ray =  mainCamera.ScreenPointToRay(screenCenter + screenOffset);
 
-            if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity, layerMask))
+            if (Physics.Raycast(ray, out raycastHit, Mathf.Infinity, raycastDetectionLayers))
             {
+                Debug.Log(raycastHit.collider.gameObject.name);
                 // Get rotation from normal
                 Quaternion rot = Quaternion.FromToRotation(Vector3.up, raycastHit.normal);
                 Vector3 pos = raycastHit.point;

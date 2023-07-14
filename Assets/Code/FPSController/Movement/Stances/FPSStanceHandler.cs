@@ -99,8 +99,6 @@ public class FPSStanceHandler : MonoBehaviour
 		StanceChangedDelegate?.Invoke(newStance);
 
 		StanceUpdate(newStance);
-
-		_player.CanSprint = (newStance == StandStance);
 	}
 }
 

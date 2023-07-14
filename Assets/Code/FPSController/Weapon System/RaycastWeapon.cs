@@ -6,6 +6,9 @@ using Sirenix.OdinInspector;
 
 public class RaycastWeapon : WeaponBase
 {
+    [BoxGroup("Shotgun Raycast Weapon Properties")]
+    public LayerMask raycastDetectionLayers;
+
     [BoxGroup("Raycast Weapon Properties")]
     [Tooltip("This is the particle to be spawned on hit for this weapon.")]
     [Required]
@@ -19,9 +22,7 @@ public class RaycastWeapon : WeaponBase
         // Declare a raycast hit to store information about what our raycast has hit
         RaycastHit raycastHit;
 
-        int layerMask = ~(1 << LayerMask.NameToLayer("Player"));
-
-        if (Physics.Raycast(rayOrigin, Camera.main.transform.forward, out raycastHit, Mathf.Infinity, layerMask))
+        if (Physics.Raycast(rayOrigin, Camera.main.transform.forward, out raycastHit, Mathf.Infinity, raycastDetectionLayers))
         {
             // Get rotation from normal
             Quaternion rot = Quaternion.FromToRotation(Vector3.up, raycastHit.normal);
