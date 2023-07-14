@@ -16,17 +16,30 @@ public class RaycastWeapon : WeaponBase
 
     protected override void Fire()
     {
-        // Handle Raycast Weapon Firing
-        Vector3 rayOrigin = Camera.main.ViewportToWorldPoint (new Vector3(0.5f, 0.5f, 0.0f));
+        Vector3 screenCenter = new Vector3(Screen.width / 2f, Screen.height / 2f, 0f);
+        RaycastHit hit = PerformRaycastImpactCalcuation(Camera.main.ScreenPointToRay(screenCenter), Mathf.Infinity);
+    }
 
+    protected RaycastHit PerformRaycastImpactCalcuation(Ray ray, float distance)
+    {
+        // Handle Raycast Weapon Firing
         // Declare a raycast hit to store information about what our raycast has hit
         RaycastHit raycastHit;
 
-        if (Physics.Raycast(rayOrigin, Camera.main.transform.forward, out raycastHit, Mathf.Infinity, raycastDetectionLayers))
+        if (Physics.Raycast(ray, out raycastHit, distance, raycastDetectionLayers, QueryTriggerInteraction.Ignore))
         {
             // Get rotation from normal
             Quaternion rot = Quaternion.FromToRotation(Vector3.up, raycastHit.normal);
             Vector3 pos = raycastHit.point;
+
+            // Can impact materials and footstep materials be syncronized in some way?
+            // Do they need to be?
+            ImpactMaterial impactMaterialComponent = raycastHit.collider.gameObject.GetComponent<ImpactMaterial>();
+            if (impactMaterialComponent != null)
+            {
+                Debug.Log("Hit, " + impactMaterialComponent.Type);
+            }
+
             // Create the hit particle system gameobject
             var createdParticleSystem = Instantiate(raycastHitEffectPrefab, pos, rot);
             createdParticleSystem.transform.LookAt(raycastHit.point + raycastHit.normal); 
@@ -39,5 +52,7 @@ public class RaycastWeapon : WeaponBase
 
             Destroy(createdParticleSystem, 8); // TODO: change how this operates.
         }
+
+        return raycastHit;
     }
 }

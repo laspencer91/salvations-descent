@@ -2,9 +2,7 @@
 using System.Collections;
 using _Systems.Audio;
 using FirstPersonMovement;
-using InternalRealtimeCSG;
 using KinematicCharacterController;
-using KinematicCharacterController.Walkthrough.ClimbingLadders;
 using unity.Assets._Scripts.FPS.Movement.Types;
 using UnityEngine;
 using UnityEngine.ProBuilder;
@@ -327,15 +325,11 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 
 		if (Physics.Raycast(footstepRay, out hit)) 
 		{
-			MeshRenderer hitRenderer = hit.transform.GetComponent<MeshRenderer>();
+			RaycastHitTextureResult textureResult = TextureUtility.GetTextureFromRaycastHit(hit);
 
-			ProBuilderMesh pbMesh = hit.collider.GetComponent<ProBuilderMesh>();
-			if (pbMesh)
+			if (textureResult.GeometryCollision != null)
 			{
-				// Probuilder Collisions
-				var texture = FindSubmeshTexture(pbMesh.GetComponent<MeshCollider>(), hit);
-				
-				AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(texture);
+				AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(textureResult.GeometryCollision);
 
 				if (footstepAudioEvent)
 				{
@@ -344,65 +338,25 @@ public class FPSGroundStateController : FPSMovementStateController, ICharacterCo
 						(velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier));
 				}
 			}
-			else if (hitRenderer != null) 
-			{
-				// Standard Mesh Collisions
-				// Find the correct audio event from the assigned AudioEventDictionary.
-				AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(hitRenderer.sharedMaterial.mainTexture);
-				
-				if (footstepAudioEvent)
-				{
-					_footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
-					footstepAudioEvent.Play(_audioSource,
-						(velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier));
-				}
-			} 
 			else
 			{
-				// Terrain Collisions
-				TerrainCollider terrainCollider = hit.collider.GetComponent<TerrainCollider>();
-				if (terrainCollider) 
-				{
-					TextureToAlphaMapValue[] textureValues = GetTerrainTexture.GetTextureAtPosition(hit.point);
-					foreach (TextureToAlphaMapValue textureValue in textureValues) 
-					{
-						if (textureValue.alpha > 0.1f)
-						{
-							// Find the correct audio event from the assigned AudioEventDictionary.
-							AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(textureValue.texture);
+				// Terrain Audio Blend by playing multiple sounds at Levels dependent upon each texture's alpha value.
+				foreach (TextureAndAlpha textureValue in textureResult.TerrainCollision.Values) 
+                {
+                    if (textureValue.alpha > 0.1f)
+                    {
+                        // Find the correct audio event from the assigned AudioEventDictionary.
+                        AudioEvent footstepAudioEvent = _footstepEventConfiguration.GetFootstepAudioEventForMaterial(textureValue.texture);
 
-							if (footstepAudioEvent)
-							{
-								_footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
-								footstepAudioEvent.Play(_audioSource,
-									((velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier) * textureValue.alpha));
-							}
-						}
-					}
-				}
+                        if (footstepAudioEvent)
+                        {
+                            _footstepAudioPlaybackTimer = _footstepAudioPlaySpread;
+                            footstepAudioEvent.Play(_audioSource,
+                                ((velocity.magnitude / MovementProfile.BaseMaxSpeed * _stanceSpeedMultiplier) * textureValue.alpha));
+                        }
+                    }
+                }
 			}
-
 		}
-	}
-
-	/** Used to detect submesh texture for probuilder. Should probably go to a Utility class. **/
-	private Texture FindSubmeshTexture(MeshCollider collider, RaycastHit hit)
-	{
-		Mesh mesh = collider.sharedMesh;
-
-		// There are 3 indices stored per triangle
-		int limit = hit.triangleIndex * 3;
-		int submesh;
-		for (submesh = 0; submesh < mesh.subMeshCount; submesh++)
-		{
-			int numIndices = mesh.GetTriangles(submesh).Length;
-			if (numIndices > limit)
-				break;
-
-			limit -= numIndices;
-		}
-		Texture myTexture = hit.collider.GetComponent<MeshRenderer>().sharedMaterials[submesh].mainTexture;
-
-		return myTexture;
 	}
 }
