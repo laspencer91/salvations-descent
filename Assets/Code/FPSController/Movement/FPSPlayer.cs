@@ -1,5 +1,6 @@
 ﻿using _Systems.Audio;
 using _Systems.FPS_Character.FPSController.Scripts.Movement;
+using Cinemachine;
 using EventManagement;
 using KinematicCharacterController;
 using Sirenix.OdinInspector;
@@ -12,7 +13,10 @@ public class FPSPlayer : MonoBehaviour
 
     public int CurrentHealth = 100;
 
-    public AudioEvent TakeDamageAudioEvent;
+    [BoxGroup("Take Damage")] public AudioEvent TakeDamageAudioEvent;
+    [BoxGroup("Take Damage")] public CinemachineImpulseSource ShakeImpulseSource;
+    [BoxGroup("Take Damage")] public float TakeDamageImpulseMultiplier = 1.0f;
+    [BoxGroup("Take Damage")] public Trigger OnPlayerDeathTrigger;
 
     // Components
     private FPSStanceHandler      _stanceHandler;
@@ -43,12 +47,25 @@ public class FPSPlayer : MonoBehaviour
         SetCharacterControllerState(CharacterControllerState.GroundMovement);
     }
 
+    public bool IsDead = false;
+
     public void TakeDamage(int damage)
     {
         CurrentHealth -= damage;
         ScreenFlash.FlashScreen(FlashType.Damage);
         TakeDamageAudioEvent.Play(audioSource);
-        Debug.Log("Took Damage, Current Health: " + CurrentHealth);
+        ShakeImpulseSource.GenerateImpulse(damage * TakeDamageImpulseMultiplier);
+
+        if (CurrentHealth <= 0)
+        {
+            CurrentHealth = 0;
+
+            if (!IsDead)
+            {
+                OnPlayerDeathTrigger.Emit();
+                IsDead = true;
+            }
+        }
     }
 
     [Button]
@@ -78,6 +95,9 @@ public class FPSPlayer : MonoBehaviour
     
     void Update()
     {
+        if (GameManager.GetGameState() == GameState.LevelComplete || GameManager.GetGameState() == GameState.GameOver) 
+            return;
+
         ClearKeys();
         
         // Stance Handler

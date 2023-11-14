@@ -23,22 +23,5 @@ namespace EventManagement
         {
             OnJump?.Invoke();
         }
-        
-        
-        // SPRINTING
-        public delegate void StartSprint();
-        public StartSprint OnStartSprint;
-        public void FireStartSprintEvent()
-        {
-            OnStartSprint?.Invoke();
-        }
-        
-        
-        public delegate void EndSprint();
-        public EndSprint OnEndSprint;
-        public void FireEndSprintEvent()
-        {
-            OnEndSprint?.Invoke();
-        }
     }
 }

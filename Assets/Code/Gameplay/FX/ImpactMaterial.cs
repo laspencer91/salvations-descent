@@ -11,5 +11,5 @@ public enum ImpactMaterialType
 {
     Wood,
     Dirt,
-    Tree
+    Meat
 }

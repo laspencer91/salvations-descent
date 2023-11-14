@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using _Systems.Audio;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.AI;
 
 
+[RequireComponent(typeof(AudioSource))]
 public class EnemyAIMeleeAttackStateBehavior : AIStateBehavior<EnemyState>
 {
     public float AttackRange = 2f; // Adjust the attack range as needed
@@ -13,6 +15,11 @@ public class EnemyAIMeleeAttackStateBehavior : AIStateBehavior<EnemyState>
     [Tooltip("Speed at which the character will rotate toward the player before attacking again.")]
     public float RetargetRotationSpeed = 360f;
     public float CalculateNavDestinationFrequency = 0.25f;
+
+    [BoxGroup("Audio")]
+    public AudioEvent ChaseAudioEvent;
+    [BoxGroup("Audio")]
+    public Vector2 ChaseAudioPlayInterval = new Vector2(1f, 2f);
 
     [BoxGroup("Animations")]
     [RequiredListLength(1, 99)]
@@ -25,14 +32,17 @@ public class EnemyAIMeleeAttackStateBehavior : AIStateBehavior<EnemyState>
     private NavMeshAgent navMeshAgent;
     private Transform playerTransform;
     private Animator animator;
+    private AudioSource audioSource;
     private MeleeAttackState currentState;
     private Quaternion desiredRotation; // Store the desired rotation for rotation correction
+    private float chasePlayAudioTimer = 0;
 
     public override void AwakeState()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         animator = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -48,6 +58,8 @@ public class EnemyAIMeleeAttackStateBehavior : AIStateBehavior<EnemyState>
             case MeleeAttackState.Attacking: ExecuteAttackState(); break;
             case MeleeAttackState.Retargeting: ExecuteRetargetState(); break;
         }
+
+        HandleAudio();
     }
 
     private bool isAttacking = false;
@@ -72,14 +84,16 @@ public class EnemyAIMeleeAttackStateBehavior : AIStateBehavior<EnemyState>
     }
 
     private float calculateNavDestinationTime = 0;
+    
     public void ExecuteChaseState()
     {
         if (navMeshAgent.isStopped)
         {
+            // First Frame In The Chase State, this check detects the transition.
             animator.CrossFadeInFixedTime(ChaseAnimationName, 0.25f);
             navMeshAgent.isStopped = false;
         }
-
+        // Recalculate Destination
         calculateNavDestinationTime -= Time.deltaTime;
         if (calculateNavDestinationTime <= 0)
         {
@@ -87,6 +101,7 @@ public class EnemyAIMeleeAttackStateBehavior : AIStateBehavior<EnemyState>
             navMeshAgent.SetDestination(playerTransform.position);
         }
 
+        // Attack Transition Detection
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
         if (distanceToPlayer <= AttackRange)
         {
@@ -118,6 +133,16 @@ public class EnemyAIMeleeAttackStateBehavior : AIStateBehavior<EnemyState>
     {
         float angleDifference = Quaternion.Angle(transform.rotation, targetRotation);
         return angleDifference <= 5f;
+    }
+
+    private void HandleAudio() 
+    {
+        chasePlayAudioTimer -= Time.deltaTime;
+        if (chasePlayAudioTimer <= 0)
+        {
+            ChaseAudioEvent.Play(audioSource);
+            chasePlayAudioTimer = Random.Range(ChaseAudioPlayInterval.x, ChaseAudioPlayInterval.y);
+        }
     }
 
     public override void EnterState()

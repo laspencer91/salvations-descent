@@ -9,8 +9,6 @@ public class Crate : MonoBehaviour, IDamageable
 
     public GameObject DestructionEffectPrefab;
 
-    public AudioEvent DestructionSoundEffect;
-
     public void TakeDamage(int damage)
     {
         Hitpoints -= damage;

@@ -16,6 +16,8 @@ public class EnemyAIPatrolStateBehavior : AIStateBehavior<EnemyState>, ITriggerL
     [BoxGroup("Alert Settings")] [ShowIf("AlertOnAreaTrigger")]
     public AreaTrigger AlertOnAreaTriggerObject;
     [BoxGroup("Alert Settings")]
+    public Trigger AlterOnTrigger;
+    [BoxGroup("Alert Settings")]
     public bool AlertOnDistanceToPlayer;
     [BoxGroup("Alert Settings")] [ShowIf("AlertOnDistanceToPlayer")]
     [Tooltip("Frequency of Distance and Line Of Sight Checks")]
@@ -147,7 +149,9 @@ public class EnemyAIPatrolStateBehavior : AIStateBehavior<EnemyState>, ITriggerL
     /// Called by an AreaTrigger.
     public void OnTrigger(string triggerName)
     {
-        if (AlertOnAreaTrigger && triggerName == AlertOnAreaTriggerObject.gameObject.name) 
+        bool isAreaTrigger = AlertOnAreaTriggerObject && triggerName == AlertOnAreaTriggerObject.gameObject.name;
+        bool isTrigger = AlterOnTrigger && AlterOnTrigger.Is(triggerName);
+        if (isAreaTrigger || isTrigger)
         {
             Debug.Log("Triggered By: " + triggerName);
             stateMachine.TransitionToState(EnemyState.Attacking);
@@ -192,9 +196,8 @@ public class EnemyAIPatrolStateBehavior : AIStateBehavior<EnemyState>, ITriggerL
         lineOfSightCheckTime -= Time.deltaTime;
         if (lineOfSightCheckTime <= 0)
         {
-            if (IsPlayerInView())
+            if (IsPlayerInView() && !player.IsDead)
             {
-                Debug.Log("Player is in view, transitioning to Attack State");
                 stateMachine.TransitionToState(EnemyState.Attacking);
             }
             lineOfSightCheckTime = CheckFrequency;

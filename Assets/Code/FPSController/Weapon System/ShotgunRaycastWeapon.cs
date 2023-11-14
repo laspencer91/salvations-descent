@@ -1,16 +1,9 @@
 using System;
-using _Systems.Audio;
 using UnityEngine;
-using UnityEngine.Events;
 using Sirenix.OdinInspector;
 
 public class ShotgunRaycastWeapon : RaycastWeapon
 {
-    [BoxGroup("Shotgun Raycast Weapon Properties")]
-    [Tooltip("This is the particle to be spawned on hit for this weapon.")]
-    [Required]
-    public GameObject RaycastHitEffectPrefab;
-
     [BoxGroup("Shotgun Raycast Weapon Properties")]
     public float BulletSpreadModifier = 10;
 
@@ -29,6 +22,13 @@ public class ShotgunRaycastWeapon : RaycastWeapon
             Ray ray =  mainCamera.ScreenPointToRay(screenCenter + screenOffset);
 
             RaycastHit hit = PerformRaycastImpactCalcuation(ray, Mathf.Infinity);
+            
+            GameManager.RecordShotFired();
+        }
+
+        if (muzzleFlashParticleSystem)
+        {
+            muzzleFlashParticleSystem.Play();
         }
     }
 }

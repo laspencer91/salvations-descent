@@ -37,7 +37,7 @@ public class ScreenFlash : MonoBehaviour
         ScreenFlash.Instance._FlashScreen(flashType, flashDuration);
     }
 
-    private void _FlashScreen(FlashType flashType, float flashDuration)
+    private void _FlashScreen(FlashType flashType, float flashDuration, bool smoothFade = true)
     {
         Color flashColor = Color.white;
         switch (flashType)
@@ -49,7 +49,15 @@ public class ScreenFlash : MonoBehaviour
             flashColor = ItemPickupColor;
             break;
         }
-        StartCoroutine(FlashRoutine(flashColor, flashDuration));
+
+        if (smoothFade)
+        {
+            StartCoroutine(SmoothFlashRoutine(flashColor, flashDuration));       
+        }
+        else
+        {
+            StartCoroutine(FlashRoutine(flashColor, flashDuration));           
+        }
     }
 
     private IEnumerator FlashRoutine(Color flashColor, float flashDuration)
@@ -60,6 +68,23 @@ public class ScreenFlash : MonoBehaviour
 
         flashImage.color = originalColor;
     }
+
+    private IEnumerator SmoothFlashRoutine(Color flashColor, float flashDuration)
+{
+    Color startColor = flashImage.color;
+    Color endColor = flashColor;
+
+    float elapsedTime = 0f;
+    while (elapsedTime < flashDuration)
+    {
+        flashImage.color = Color.Lerp(startColor, endColor, elapsedTime / flashDuration);
+
+        elapsedTime += Time.deltaTime;
+        yield return null;
+    }
+
+    flashImage.color = originalColor;
+}
 }
 
 public enum FlashType

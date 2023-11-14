@@ -74,7 +74,7 @@ public abstract class WeaponBase : MonoBehaviour
 
     void Update()
     {
-        if (IsShootingEnabled)
+        if (IsShootingEnabled && GameManager.GetGameState() == GameState.InProgress)
         {
             if (!IsReloading) 
             {
@@ -98,6 +98,7 @@ public abstract class WeaponBase : MonoBehaviour
             {
                 if (CurrentAmmoLoaded > 0) 
                 {
+                    CrosshairController.SetCrosshairScale(2f);
                     shootEvent.Invoke();
                     shootAudioEvent.Play(audioSource);
                     transform.localPosition = Vector3.back * recoilDistance;

@@ -60,7 +60,7 @@ Material:
     - _ScrollingSpeed: 3
     - _UseGeneratedNoise: 0
     m_Colors:
-    - _Blend: {r: 0.5943396, g: 0.398886, b: 0.36258447, a: 0.20392157}
+    - _Blend: {r: 0.61960787, g: 1, b: 0.7629822, a: 0.16078432}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _TextureScale: {r: 0.005, g: 0.005, b: 0, a: 0}
   m_BuildTextureStacks: []

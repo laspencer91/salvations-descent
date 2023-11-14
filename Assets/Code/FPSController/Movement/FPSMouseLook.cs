@@ -27,7 +27,8 @@ public class FPSMouseLook : MonoBehaviour
 
     void Update()
     {
-        MouseLook();
+        if (GameManager.GetGameState() != GameState.GameOver)
+            MouseLook();
     }
 
     public void MouseLook()

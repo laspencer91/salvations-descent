@@ -26,6 +26,7 @@ public class WeaponPickup : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             other.gameObject.GetComponentInChildren<WeaponSystem>().AddToArsenal(type);
+            ScreenFlash.FlashScreen(FlashType.ItemPickup);
             pickupAudioEvent.Play(other.gameObject.GetComponent<AudioSource>());
             Destroy(gameObject);
         }

@@ -11,6 +11,7 @@ public enum GunType
     RedemptionRevolver,
     Rifle,
     DamnatorShotgun,
+    Wrench,
 }
 
 public class WeaponSystem : MonoBehaviour
