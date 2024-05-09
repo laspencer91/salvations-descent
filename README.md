@@ -1,11 +1,10 @@
 # FPS Prototype
 
-[Download Executable](https://quenchgames.itch.io/fps-mechanics-prototype)
-
 ----
 
 ![alt text](Recordings/screenshot_1.jpg)
 
+[Download Executable](https://quenchgames.itch.io/fps-mechanics-prototype)
 
 This document is to serve as a technical documentation for the project.
 
