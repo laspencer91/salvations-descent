@@ -37,9 +37,13 @@ The high level overview of the system is as follows:
       - Disable the old StateBehavior.
       - Enable the new StateBehavior.
     - This class also defines other non-state related behaviors such as executing footstep audio and handling damage effects.
+3. Blend trees were not used for this. I have often found that calling animator changes manually through code is more simple and flexible for basic conditions.
 
 ### Quake Like Movement
 This project implements the same velocity calculation algorithm as Quake 1, and so strafe jumping is possible.
+
+### Weapon System
+The weapon system is pretty basic. Each weapon is added under a root "Weapon Manager". The Weapon manager tracks what weapons the player has avaiable. The player "requests" a weapon by pressing a number key. If the player has the requested weapon the Weapon Manager disables the current weapon and enables the new one. An animation is played OnEnable and OnDisable for the guns.
 
 ### Trigger System
 Trigger System (a basic event system) was put in place as an easy to use mechanism for tying object behavior to game events. It works as follows:
@@ -81,3 +85,8 @@ public class AreaTrigger
   }
 }
 ```
+
+### Bullet Spread Visualizer Inspector
+![alt text](Recordings/bullet_spread_tool.PNG)
+
+I wanted a way to visualize a bullet spread pattern given a set of vertices. This tool was implemented to help with that, and I found this very useful. It only visualizes the defined points, and is not editable in a way where you can click and drag the points. But its current behavior is intuitive enough that implementing draggable dots would be overkill.
