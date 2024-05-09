@@ -37,3 +37,47 @@ The high level overview of the system is as follows:
       - Disable the old StateBehavior.
       - Enable the new StateBehavior.
     - This class also defines other non-state related behaviors such as executing footstep audio and handling damage effects.
+
+### Quake Like Movement
+This project implements the same velocity calculation algorithm as Quake 1, and so strafe jumping is possible.
+
+### Trigger System
+Trigger System (a basic event system) was put in place as an easy to use mechanism for tying object behavior to game events. It works as follows:
+1. A Singleton TriggerManager exists in the scene. It detects all ITriggerListeners and saves a reference to them.
+2. Because it is a Singleton it can be globally accessed and triggers can be called like this: `TriggerManager.CallTrigger(triggerName)`
+3. GameObjects that implement ITriggerListener will need to implement an `OnTrigger(triggerName)` method.
+4. A utility `ScriptableObject` called `Trigger` can be used to solve the problem of decoupled triggerNames.
+
+Here is an example:
+```cs
+// Attach this to any door, create a new Trigger via Right Click -> Create Trigger. Assign the resource a name. Link that resource to the TriggerToListenTo variable here.
+public class DoorTriggerListener implements ITriggerListener
+{
+  // Scriptable object that is createable from the RightClick context menu.
+  [Required] public Trigger TriggerToListenTo;
+
+  void OnTrigger(triggerName)
+  {
+    if (TriggerToListenTo.Is(triggerName))
+    {
+      OpenDoor();
+    }
+  }
+
+  void OpenDoor() { ...open door logic }
+}
+
+public class AreaTrigger
+{
+  // Link the same Trigger resource as above into this component, and they will now work together!
+  public Trigger TriggerToEmit;
+  
+  private void OnTriggerEnter(Collider other) 
+  {
+      if (GameObjectHelper.IsPlayer(other.gameObject))
+      {
+          TriggerToEmit.Emit();
+      }
+  }
+}
+```
