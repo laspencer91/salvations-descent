@@ -44,7 +44,7 @@ The high level overview of the system is as follows:
 This project implements the same velocity calculation algorithm as Quake 1, and so strafe jumping is possible.
 
 ### Weapon System
-The weapon system is pretty basic. Each weapon is added under a root "Weapon Manager". The Weapon manager tracks what weapons the player has avaiable. The player "requests" a weapon by pressing a number key. If the player has the requested weapon the Weapon Manager disables the current weapon and enables the new one. An animation is played OnEnable and OnDisable for the guns.
+The weapon system is pretty basic. Each weapon is added under a root "Weapon Manager". The Weapon manager tracks what weapons the player has available. The player "requests" a weapon by pressing a number key. If the player has the requested weapon the Weapon Manager disables the current weapon and enables the new one. An animation is played OnEnable and OnDisable for the guns.
 
 ### Trigger System
 Trigger System (a basic event system) was put in place as an easy to use mechanism for tying object behavior to game events. It works as follows:
