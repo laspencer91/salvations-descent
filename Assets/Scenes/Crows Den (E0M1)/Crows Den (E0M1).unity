@@ -12181,6 +12181,10 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1559618968270661767, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
+      propertyPath: CurrentHealth
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 1559618968270661767, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: OnPlayerDeathTrigger
       value: 
       objectReference: {fileID: 11400000, guid: 4cd7db9f0e1382c47be099aa09413362, type: 2}
@@ -12218,11 +12222,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3207106524300723436, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: OwnedGuns.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3207106524300723436, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: OwnedGuns.Array.data[0]
-      value: 4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3207106524300723436, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: OwnedGuns.Array.data[1]
@@ -12322,7 +12326,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6007682376456571639, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6075057239040751384, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: m_AnchoredPosition.x
@@ -12374,7 +12378,7 @@ PrefabInstance:
       objectReference: {fileID: 1871847569}
     - target: {fileID: 6766966712687460930, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7161546293954189360, guid: 650fe2b0fa856f2449648530d6744af3, type: 3}
       propertyPath: m_margin.w
@@ -25239,7 +25243,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1763118619
 Transform:
   m_ObjectHideFlags: 0
