@@ -19,12 +19,12 @@ public class FPSPlayer : MonoBehaviour
     [BoxGroup("Take Damage")] public Trigger OnPlayerDeathTrigger;
 
     // Components
-    private FPSStanceHandler      _stanceHandler;
-    private FPSInput              _input;
-    private FPSMovementStateController    _activeMovementController;
-    private FPSMovementStateController    _groundMovementController;
-    private FPSMovementStateController    _ladderMovementController;
-    private AudioSource audioSource;
+    private FPSStanceHandler            _stanceHandler;
+    private FPSInput                    _input;
+    private FPSMovementStateController  _activeMovementController;
+    private FPSMovementStateController  _groundMovementController;
+    private FPSMovementStateController  _ladderMovementController;
+    private AudioSource                 _audioSource;
     
     // Event management system that is accessable from all child components. This is a good
     // way for components to listen for messages between each other without being tightly coupled.
@@ -42,7 +42,7 @@ public class FPSPlayer : MonoBehaviour
         _groundMovementController.Motor = Motor;
         _ladderMovementController.Motor = Motor;
 
-        audioSource = GetComponent<AudioSource>();
+        _audioSource = GetComponent<AudioSource>();
         
         SetCharacterControllerState(CharacterControllerState.GroundMovement);
     }
@@ -53,7 +53,7 @@ public class FPSPlayer : MonoBehaviour
     {
         CurrentHealth -= damage;
         ScreenFlash.FlashScreen(FlashType.Damage);
-        TakeDamageAudioEvent.Play(audioSource);
+        TakeDamageAudioEvent.Play(_audioSource);
         ShakeImpulseSource.GenerateImpulse(damage * TakeDamageImpulseMultiplier);
 
         if (CurrentHealth <= 0)
@@ -115,8 +115,8 @@ public class FPSPlayer : MonoBehaviour
         {
             if (_stanceHandler == null || _stanceHandler.GetStance() == _stanceHandler.StandStance)
                     _input.JumpKey = true;
-                else
-                    _stanceHandler.Stand();
+            else
+                _stanceHandler.Stand();
         }
 
         // Movement

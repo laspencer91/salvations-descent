@@ -16,14 +16,14 @@ public class GameManager : MonoBehaviour, ITriggerListener
     [FoldoutGroup("Level Completion")] public float TimeAfterLevelEndToEnableSpacebar = 2f;
     [FoldoutGroup("Game Over")] public Trigger ListenForOnPlayerDiedTrigger;
     
-    private LevelStats levelStats = new LevelStats();
+    private LevelStats _levelStats = new LevelStats();
 
-    private GameState gameState = GameState.InProgress;
+    private GameState _gameState = GameState.InProgress;
 
 
-    private float levelCompleteTimestamp = 0;
+    private float _levelCompleteTimestamp = 0;
 
-    private float levelStartTimestamp = 0;
+    private float _levelStartTimestamp = 0;
 
     private void Awake() 
     {
@@ -35,20 +35,20 @@ public class GameManager : MonoBehaviour, ITriggerListener
         }
 
         Instance = this;
-        levelStartTimestamp = Time.time;
+        _levelStartTimestamp = Time.time;
     }
 
     private void Update() 
     {
-        if (gameState == GameState.LevelComplete)
+        if (_gameState == GameState.LevelComplete)
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                if (Time.time - levelCompleteTimestamp >= TimeAfterLevelEndToEnableSpacebar)
+                if (Time.time - _levelCompleteTimestamp >= TimeAfterLevelEndToEnableSpacebar)
                     RestartScene();
             }
         } 
-        else if (gameState == GameState.GameOver)
+        else if (_gameState == GameState.GameOver)
         {   
             if (Input.GetKeyDown(KeyCode.R))
             {
@@ -72,37 +72,37 @@ public class GameManager : MonoBehaviour, ITriggerListener
 
     public static GameState GetGameState()
     {
-        return Instance.gameState;
+        return Instance._gameState;
     }
 
     public static void RecordShotFired()
     {
-        Instance.levelStats.ShotsFired += 1;
+        Instance._levelStats.ShotsFired += 1;
     }
 
     public static void RecordHit()
     {
-        Instance.levelStats.ShotsOnTarget += 1;
+        Instance._levelStats.ShotsOnTarget += 1;
     }
 
     public static void RecordHeadshot()
     {
-        Instance.levelStats.Headshots += 1;
+        Instance._levelStats.Headshots += 1;
     }
 
     private void ExecuteOnLevelCompleteProcedure()
     {
-        gameState = GameState.LevelComplete;
+        _gameState = GameState.LevelComplete;
         ScreenFade.StartFade(ScreenFadeType.LevelComplete, ScreenFadeDuration);
 
-        levelCompleteTimestamp = Time.time;
-        Instance.levelStats.Time = levelCompleteTimestamp - levelStartTimestamp;    
-        LevelCompleteStatsDisplay.BeginLevelEndProcedure(Instance.levelStats);
+        _levelCompleteTimestamp = Time.time;
+        Instance._levelStats.Time = _levelCompleteTimestamp - _levelStartTimestamp;    
+        LevelCompleteStatsDisplay.BeginLevelEndProcedure(Instance._levelStats);
     }
 
     private void ExecuteGameOverProcedure()
     {
-        gameState = GameState.GameOver;
+        _gameState = GameState.GameOver;
         ScreenFade.StartFade(ScreenFadeType.GameOver, ScreenFadeDuration);
         GameOverScreenDisplay.BeginGameOverProcedure();
     }

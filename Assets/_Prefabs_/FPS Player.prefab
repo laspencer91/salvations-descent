@@ -2311,6 +2311,7 @@ GameObject:
   - component: {fileID: 2638909798830366206}
   - component: {fileID: 5136483269382597905}
   - component: {fileID: 7231413972581711593}
+  - component: {fileID: 1757371000347145249}
   m_Layer: 3
   m_Name: Level End Stats Canvas Group
   m_TagString: Untagged
@@ -2365,10 +2366,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 844f2a4fd31afbb48972874993f39ec4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OnStatLabelShowAudioEvent: {fileID: 0}
+  TimeLabel: {fileID: 0}
+  ShotsFiredLabel: {fileID: 0}
+  AccuracyLabel: {fileID: 0}
+  HeadshotsLabel: {fileID: 0}
   TimeCounter: {fileID: 941968565090151762}
   TotalShotsFiredCounter: {fileID: 7282327199078141389}
   AccuracyCounter: {fileID: 7564421623255065441}
   HeadshotsCounter: {fileID: 2855759122532072762}
+--- !u!114 &1757371000347145249
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6342127306555973076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4041b4743295f6048a0311b0824d144e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  events: []
 --- !u!1 &6377022353600648290
 GameObject:
   m_ObjectHideFlags: 0
@@ -2459,6 +2478,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LevelCompleteFadeColor: {r: 0, g: 0, b: 0, a: 1}
+  GameOverFadeColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1 &6503656133303832454
 GameObject:
   m_ObjectHideFlags: 0
@@ -3795,6 +3815,8 @@ MonoBehaviour:
   TakeDamageAudioEvent: {fileID: 11400000, guid: ad4ba67ac99cea546bde4d52f346e519, type: 2}
   ShakeImpulseSource: {fileID: 8380750775450106028}
   TakeDamageImpulseMultiplier: 0.1
+  OnPlayerDeathTrigger: {fileID: 11400000, guid: 4cd7db9f0e1382c47be099aa09413362, type: 2}
+  IsDead: 0
 --- !u!114 &1646631968423548303
 MonoBehaviour:
   m_ObjectHideFlags: 0
