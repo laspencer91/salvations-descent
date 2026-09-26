@@ -1,12 +1,17 @@
-# FPS Prototype
+# Salvation's Descent / FPS Mechanics Prototype
 
-----
+An earlier **Unity/C# first-person shooter prototype** focused on gameplay systems, reusable architecture, and small editor tools. I built this project before I began using AI coding assistants.
+
+It includes modular AI states, Quake-style movement with strafe jumping, a swappable weapon system, event-driven interactions, camera and feedback systems, and a custom bullet-spread inspector.
+
+**Unity version:** 2022.3.0f1  
+**Prototype build:** https://imakegames-studios.itch.io/fps-mechanics-prototype
+
+---
 
 ![alt text](Recordings/screenshot_1.jpg)
 
-[Download Executable](https://quenchgames.itch.io/fps-mechanics-prototype)
-
-This document is to serve as a technical documentation for the project.
+This repository is preserved as a technical snapshot of the project and its implementation decisions.
 
 ### Features
 
